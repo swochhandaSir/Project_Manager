@@ -1,10 +1,14 @@
-const App = () => {
+import React from "react";
+import { RouterProvider } from "react-router";
+import { AuthProvider } from "./context/AuthContext";
+import { Toaster } from "./components/ui/sonner";
+import { router } from "./routes/routes";
+
+export default function App() {
   return (
-    <div>
-      hello
-    </div>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <Toaster />
+    </AuthProvider>
+  );
 }
-
-export default App
-
