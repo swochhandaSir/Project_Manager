@@ -9,7 +9,7 @@ import { verifyToken } from "../middleware/verifyToken.js";
 const routes = express.Router();
 routes.use("/project", verifyToken, projectRoute);
 routes.use("/user", verifyToken, userRoute);
-routes.use("/auth", verifyToken, authRoute);
+routes.use("/auth", authRoute);
 routes.use("/task", verifyToken, taskRoute);
 routes.use("/comment", verifyToken, commentRoute);
 export default routes;

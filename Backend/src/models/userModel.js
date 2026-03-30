@@ -20,6 +20,12 @@ const userSchema = new mongoose.Schema(
             enum:["manager","member"],
             default: "member"
         },
+        avatar: {
+            type: String,
+            default: function(){
+                return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.name}`
+            }
+        },
         projects: [
             {
                 type: mongoose.Schema.Types.ObjectId,

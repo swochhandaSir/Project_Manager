@@ -46,5 +46,5 @@ export const loginUser = asyncHandler(async (req, res) => {
 	res.cookie("RefreshToken", refreshToken);
 	res
 		.status(200)
-		.json({ message: "Login successful", accessToken, refreshToken });
+		.json({ message: "Login successful", accessToken });
 });
