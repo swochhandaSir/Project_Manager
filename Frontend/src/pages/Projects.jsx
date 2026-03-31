@@ -19,44 +19,52 @@ function Projects() {
   };
   const activeProjects = projects.filter((p) => p.status === "active");
   const completedProjects = projects.filter((p) => p.status === "completed");
-  return /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      className: "min-h-screen p-8",
-      style: {
-        background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)"
-      }
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-12" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
-      "h1",
-      {
-        className: "text-5xl font-bold mb-2",
-        style: {
-          fontFamily: "Indie Flower, cursive",
-          color: "#333"
-        }
-      },
-      "Project Management"
-    )), /* @__PURE__ */ React.createElement(Button, { className: "gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-lg" }, /* @__PURE__ */ React.createElement(Plus, { className: "w-4 h-4" }), "New Project")),
-    /* @__PURE__ */ React.createElement(DndProvider, { backend: HTML5Backend }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-0 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
-      ProjectColumn,
-      {
-        title: "To Do",
-        status: "active",
-        projects: activeProjects,
-        onDrop: handleDrop
-      }
-    ), /* @__PURE__ */ React.createElement(
-      ProjectColumn,
-      {
-        title: "Done",
-        status: "completed",
-        projects: completedProjects,
-        onDrop: handleDrop
-      }
-    )))
+
+  return (
+    <div
+      className="min-h-screen p-8"
+      style={{
+        background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
+      }}
+    >
+      <div className="flex items-center justify-between mb-12">
+        <div>
+          <h1
+            className="text-5xl font-bold mb-2"
+            style={{
+              fontFamily: "Indie Flower, cursive",
+              color: "#333",
+            }}
+          >
+            Project Management
+          </h1>
+        </div>
+
+        <Button className="gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
+          <Plus className="w-4 h-4" />
+          New Project
+        </Button>
+      </div>
+
+      <DndProvider backend={HTML5Backend}>
+        <div className="flex gap-0 overflow-x-auto">
+          <ProjectColumn
+            title="To Do"
+            status="active"
+            projects={activeProjects}
+            onDrop={handleDrop}
+          />
+
+          <ProjectColumn
+            title="Done"
+            status="completed"
+            projects={completedProjects}
+            onDrop={handleDrop}
+          />
+        </div>
+      </DndProvider>
+    </div>
   );
 }
-export {
-  Projects
-};
+
+export { Projects };
