@@ -7,8 +7,8 @@ import commentRoute from "./commentRoute.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
 const routes = express.Router();
-routes.use("/project", verifyToken, projectRoute);
-routes.use("/user", verifyToken, userRoute);
+routes.use("/projects",verifyToken, projectRoute);
+routes.use("/user", userRoute);
 routes.use("/auth", authRoute);
 routes.use("/task", verifyToken, taskRoute);
 routes.use("/comment", verifyToken, commentRoute);

@@ -13,14 +13,19 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 
   const user = await userSchema.findById(req.params.id).select("-password");
 
-  res.json(user);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json(user);
 });
 
 
 export const updateUser = asyncHandler(async (req, res) => {
 
   const user = await userSchema.findByIdAndUpdate(
-    req.params.id,
+    req.user.id,
     req.body,
     { new: true }
   );
