@@ -1,13 +1,12 @@
 import React from "react";
-import { RouterProvider } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "./components/ui/sonner";
-import { router } from "./routes/routes";
+import AppRouter from "./routes/routes";
 
 export default function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <AppRouter />
       <Toaster />
     </AuthProvider>
   );

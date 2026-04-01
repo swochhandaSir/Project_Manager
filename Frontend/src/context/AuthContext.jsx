@@ -1,57 +1,134 @@
-import React from "react";
-import { createContext, useContext, useState } from "react";
-import { mockUsers } from "../data/mockData";
-const AuthContext = createContext(void 0);
-function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    return savedUser ? JSON.parse(savedUser) : null;
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
+
+const AuthContext = createContext(undefined);
+
+export function AuthProvider({ children }) {
+
+  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const API = axios.create({
+    baseURL: "http://localhost:3000/api",
   });
-  const login = (email, password) => {
-    const foundUser = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem("currentUser", JSON.stringify(foundUser));
-      return true;
+
+  API.interceptors.request.use((config) => {
+
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return false;
-  };
-  const register = (name, email, password) => {
-    const existingUser = mockUsers.find((u) => u.email === email);
-    if (existingUser) {
+
+    return config;
+  });
+
+  // LOGIN
+  const login = async (email, password) => {
+    try {
+
+      const res = await API.post("/auth/login", {
+        email,
+        password,
+      });
+
+      const { accessToken } = res.data;
+
+      localStorage.setItem("accessToken", accessToken);
+
+      await fetchCurrentUser();
+
+      return true;
+
+    } catch (error) {
+      console.error(error);
       return false;
     }
-    const newUser = {
-      _id: Date.now().toString(),
-      name,
-      email,
-      password,
-      role: "member",
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-      createdAt: /* @__PURE__ */ new Date(),
-      updatedAt: /* @__PURE__ */ new Date()
-    };
-    mockUsers.push(newUser);
-    setUser(newUser);
-    localStorage.setItem("currentUser", JSON.stringify(newUser));
-    return true;
   };
+
+  // REGISTER
+  const register = async (name, email, password) => {
+    try {
+
+      await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      return true;
+
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+
+      const res = await API.get("/user");
+
+      setUser(res.data);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchCurrentUser= async () => {
+    try {
+
+      const res = await API.get("/auth/me");
+
+      setCurrentUser(res.data);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // LOGOUT
   const logout = () => {
+
+    localStorage.removeItem("accessToken");
+
     setUser(null);
-    localStorage.removeItem("currentUser");
   };
-  return /* @__PURE__ */ React.createElement(AuthContext.Provider, { value: { user, login, register, logout } }, children);
+
+  // load user on refresh
+  useEffect(() => {
+
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      fetchUsers();
+    }
+
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        user,
+        login,
+        register,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
-function useAuth() {
+
+export function useAuth() {
+
   const context = useContext(AuthContext);
-  if (context === void 0) {
-    throw new Error("useAuth must be used within an AuthProvider");
+
+  if (context === undefined) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
+
   return context;
 }
-export {
-  AuthProvider,
-  useAuth
-};

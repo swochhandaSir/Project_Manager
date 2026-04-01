@@ -7,7 +7,6 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import API from "../api/axios";
 
 function Register() {
 	const [name, setName] = useState("");
@@ -24,12 +23,14 @@ function Register() {
 			return;
 		}
 		try {
-			const res = await API.post("/auth/register", { name, email, password });
+			const success = await register(name, email, password);
 
-			toast.success("Registration successful!");
-			console.log("User registered:", res.data);
-
-			navigate("/dashboard");
+			if (!success) {
+				toast.error("Registration failed");
+				return;
+			}
+			toast.success("Registration successful! Please log in.");
+			navigate("/login");
 		} catch (error) {
 			toast.error(error.response?.data?.message || "Registration failed");
 		}
