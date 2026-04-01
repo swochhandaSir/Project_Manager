@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
 
   const API = axios.create({
     baseURL: "http://localhost:3000/api",
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem("accessToken", accessToken);
 
-      await fetchCurrentUser();
+      await Promise.all([fetchCurrentUser(), fetchUsers()]);
 
       return true;
 
@@ -85,6 +86,13 @@ export function AuthProvider({ children }) {
 
     } catch (error) {
       console.error(error);
+      // If the JWT is stale/invalid, clear it so the app doesn't keep failing on every refresh.
+      const status = error?.response?.status;
+      if (status === 401 || status === 404) {
+        localStorage.removeItem("accessToken");
+        setCurrentUser(null);
+        setUser(null);
+      }
     }
   };
 
@@ -94,22 +102,32 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("accessToken");
 
     setUser(null);
+    setCurrentUser(null);
   };
 
-  // load user on refresh
+  // load session on refresh
   useEffect(() => {
 
-    const token = localStorage.getItem("accessToken");
+    const init = async () => {
 
-    if (token) {
-      fetchUsers();
-    }
+      const token = localStorage.getItem("accessToken");
+
+      if (token) {
+        await Promise.all([fetchCurrentUser()]);
+      }
+
+      setAuthReady(true);
+
+    };
+
+    init();
 
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
+        authReady,
         currentUser,
         user,
         login,

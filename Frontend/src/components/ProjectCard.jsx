@@ -1,11 +1,12 @@
 import React from "react";
 import { useDrag } from "react-dnd";
-import { mockUsers } from "../data/mockData";
+import { useNavigate } from "react-router";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Calendar, Users } from "lucide-react";
 
 function ProjectCard({ project }) {
+  const navigate = useNavigate();
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "PROJECT",
     item: { id: project._id, status: project.status },
@@ -14,21 +15,30 @@ function ProjectCard({ project }) {
     }),
   }));
 
-  const owner = mockUsers.find((u) => u._id === project.owner);
-  const members = mockUsers.filter((u) =>
-    project.members.includes(u._id)
-  );
+  const owner = project.owner;
+  const members = Array.isArray(project.members) ? project.members : [];
 
   const stickyColors = [
     { bg: "#FEFF9C", text: "#000" },
     { bg: "#FF7EB9", text: "#000" },
     { bg: "#7AFCFF", text: "#000" },
     { bg: "#A0FF7A", text: "#000" },
-    { bg: "#FFB366", text: "#000" },
   ];
 
-  const colorIndex = project._id.length % stickyColors.length;
-  const rotation = project._id.charCodeAt(0) % 8 - 4;
+  const projectId = project._id ?? "";
+  const hash = projectId
+    ? Array.from(projectId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+    : 0;
+  const colorIndex = stickyColors.length ? hash % stickyColors.length : 0;
+  const rotations = [2, -3, 3, -2];
+  const rotation = rotations.length ? rotations[hash % rotations.length] : 0;
+
+  const startText = project.startDate
+    ? new Date(project.startDate).toLocaleDateString()
+    : "N/A";
+  const endText = project.endDate
+    ? new Date(project.endDate).toLocaleDateString()
+    : "N/A";
 
   return (
     <div
@@ -37,7 +47,8 @@ function ProjectCard({ project }) {
         opacity: isDragging ? 0.5 : 1,
         transform: `rotate(${rotation}deg)`,
       }}
-      className="cursor-move hover:scale-105 transition-all"
+      className="cursor-pointer hover:scale-105 transition-all"
+      onClick={() => project?._id && navigate(`/projects/${project._id}`)}
     >
       <div
         className="relative p-5 rounded-sm min-h-[200px]"
@@ -81,11 +92,11 @@ function ProjectCard({ project }) {
           <div className="flex items-center gap-2 text-base pt-2">
             <Calendar className="w-4 h-4" />
             <span>
-              {new Date(project.startDate).toLocaleDateString()}
+              {startText}
             </span>
             <span>-</span>
             <span>
-              {new Date(project.endDate).toLocaleDateString()}
+              {endText}
             </span>
           </div>
 
@@ -102,10 +113,10 @@ function ProjectCard({ project }) {
                   >
                     <AvatarImage
                       src={member.avatar}
-                      alt={member.name}
+                      alt={member.name ?? "Member"}
                     />
                     <AvatarFallback className="text-xs">
-                      {member.name.charAt(0)}
+                      {(member.name ?? "?").charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 ))}
@@ -118,7 +129,7 @@ function ProjectCard({ project }) {
               </div>
             </div>
 
-            <span className="text-sm">by {owner?.name}</span>
+            <span className="text-sm">by {owner?.name ?? "Unknown"}</span>
           </div>
         </div>
       </div>

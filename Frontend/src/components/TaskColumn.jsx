@@ -15,6 +15,14 @@ function TaskColumn({ title, status, tasks, color, onDrop }) {
     }),
   }));
 
+  const priorityRank = { high: 0, medium: 1, low: 2 };
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const aRank = priorityRank[a.priority] ?? 99;
+    const bRank = priorityRank[b.priority] ?? 99;
+    if (aRank !== bRank) return aRank - bRank;
+    return String(b._id ?? "").localeCompare(String(a._id ?? ""));
+  });
+
   return (
     <div
       ref={drop}
@@ -45,7 +53,7 @@ function TaskColumn({ title, status, tasks, color, onDrop }) {
 
       {/* Tasks List */}
       <div className="space-y-6">
-        {tasks.map((task) => (
+        {sortedTasks.map((task) => (
           <TaskCard key={task._id} task={task} />
         ))}
       </div>

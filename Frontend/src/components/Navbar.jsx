@@ -18,7 +18,7 @@ import {
 	LogOut,
 } from "lucide-react";
 function Navbar() {
-	const { user, currentUser, logout } = useAuth();
+	const { currentUser, logout } = useAuth();
 	const navigate = useNavigate();
 	const handleLogout = () => {
 		logout();
@@ -110,24 +110,24 @@ function Navbar() {
 								fontSize: "16px",
 							}}
 						>
-                    {console.log(user[0])}
 							<Avatar className="w-8 h-8">
 								<AvatarImage
-									src={user[0]?.avatar}
-									alt={user[0]?.name}
+									src={currentUser?.avatar}
+									alt={currentUser?.name}
 								/>
-								<AvatarFallback>{user[0]?.name?.charAt(0)}</AvatarFallback>
+								<AvatarFallback>
+									{currentUser?.name?.charAt(0) ?? "?"}
+								</AvatarFallback>
 							</Avatar>
-							{console.log(user[0])}
-							<span>{user[0]?.name}</span>
+							<span>{currentUser?.name ?? "Account"}</span>
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuLabel>
 							<div className="flex flex-col space-y-1">
-								<p className="text-sm font-medium leading-none">{user[0]?.name}</p>
-								<p className="text-xs leading-none text-gray-500">{user[0]?.email}</p>
-								<p className="text-xs leading-none text-blue-600 mt-1">{user[0]?.role}</p>
+								<p className="text-sm font-medium leading-none">{currentUser?.name}</p>
+								<p className="text-xs leading-none text-gray-500">{currentUser?.email}</p>
+								<p className="text-xs leading-none text-blue-600 mt-1">{currentUser?.role}</p>
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />

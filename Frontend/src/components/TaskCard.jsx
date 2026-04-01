@@ -1,6 +1,5 @@
 import React from "react";
 import { useDrag } from "react-dnd";
-import { mockUsers, mockProjects } from "../data/mockData";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Calendar, Flag } from "lucide-react";
@@ -14,8 +13,12 @@ function TaskCard({ task }) {
     }),
   }));
 
-  const assignedUser = mockUsers.find((u) => u._id === task.assignedTo);
-  const project = mockProjects.find((p) => p._id === task.projectId);
+  const assignedUser = task.assignedTo && typeof task.assignedTo === "object"
+    ? task.assignedTo
+    : null;
+  const project = task.projectId && typeof task.projectId === "object"
+    ? task.projectId
+    : null;
 
   const priorityColors = {
     low: "text-green-600 bg-green-100",
@@ -23,16 +26,23 @@ function TaskCard({ task }) {
     high: "text-red-600 bg-red-100",
   };
 
+  // Match the Projects/Dashboard sticky-note palette (stable per id)
   const stickyColors = [
     { bg: "#FEFF9C", text: "#000" },
     { bg: "#FF7EB9", text: "#000" },
     { bg: "#7AFCFF", text: "#000" },
     { bg: "#A0FF7A", text: "#000" },
-    { bg: "#FFB366", text: "#000" },
   ];
 
-  const colorIndex = task._id.length % stickyColors.length;
-  const rotation = task._id.charCodeAt(0) % 8 - 4;
+  const taskId = task._id ?? "";
+  const hash = taskId
+    ? Array.from(taskId).reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+    : 0;
+  const colorIndex = stickyColors.length ? hash % stickyColors.length : 0;
+  const rotations = [2, -3, 3, -2];
+  const rotation = rotations.length ? rotations[hash % rotations.length] : 0;
+
+  const dueText = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A";
 
   return (
     <div
@@ -44,7 +54,7 @@ function TaskCard({ task }) {
       className="cursor-move hover:scale-105 transition-all"
     >
       <div
-        className="relative p-5 rounded-sm min-h-[180px]"
+        className="relative p-4 rounded-sm min-h-[150px]"
         style={{
           backgroundColor: stickyColors[colorIndex].bg,
           color: stickyColors[colorIndex].text,
@@ -61,7 +71,7 @@ function TaskCard({ task }) {
         >
           {/* Title + Priority */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-xl font-bold leading-tight">
+            <h3 className="text-lg font-bold leading-tight">
               {task.title}
             </h3>
 
@@ -76,7 +86,7 @@ function TaskCard({ task }) {
           </div>
 
           {/* Description */}
-          <p className="text-lg line-clamp-2 leading-snug">
+          <p className="text-base line-clamp-2 leading-snug">
             {task.description}
           </p>
 
@@ -87,31 +97,31 @@ function TaskCard({ task }) {
               className="text-xs border-black/30 bg-white/70"
               style={{ fontFamily: "sans-serif" }}
             >
-              {project?.title}
+              {project?.title ?? "Project"}
             </Badge>
           </div>
 
           {/* Due Date */}
-          <div className="flex items-center gap-2 text-base">
+          <div className="flex items-center gap-2 text-sm">
             <Calendar className="w-4 h-4" />
             <span>
-              {new Date(task.dueDate).toLocaleDateString()}
+              {dueText}
             </span>
           </div>
 
           {/* Assigned User */}
           <div className="flex items-center gap-2 pt-2 border-t border-black/20">
-            <Avatar className="w-7 h-7 border-2 border-white">
+            <Avatar className="w-6 h-6 border-2 border-white">
               <AvatarImage
                 src={assignedUser?.avatar}
                 alt={assignedUser?.name}
               />
               <AvatarFallback className="text-xs">
-                {assignedUser?.name.charAt(0)}
+                {(assignedUser?.name ?? "?").charAt(0)}
               </AvatarFallback>
             </Avatar>
 
-            <span className="text-base">{assignedUser?.name}</span>
+            <span className="text-sm">{assignedUser?.name ?? "Unassigned"}</span>
           </div>
         </div>
       </div>

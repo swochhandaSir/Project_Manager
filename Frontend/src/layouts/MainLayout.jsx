@@ -4,9 +4,18 @@ import { useAuth } from "../context/AuthContext";
 import { Navbar } from "../components/Navbar";
 
 function MainLayout() {
-  const { user } = useAuth();
+  const { currentUser, authReady } = useAuth();
 
-  if (!user) {
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">
+        Loading…
+      </div>
+    );
+  }
+
+  const token = localStorage.getItem("accessToken");
+  if (!token || !currentUser) {
     return <Navigate to="/login" replace />;
   }
 

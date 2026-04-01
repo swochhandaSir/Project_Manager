@@ -8,6 +8,7 @@ import { Dashboard } from "../pages/Dashboard";
 import { Projects } from "../pages/Projects";
 import { Tasks } from "../pages/Tasks";
 import CreateProject from "../pages/CreateProject";
+import { ProjectDetails } from "../pages/ProjectDetails";
 
 function AppRouter() {
   return (
@@ -25,6 +26,7 @@ function AppRouter() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/new" element={<CreateProject />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/tasks" element={<Tasks />} />
 
         </Route>

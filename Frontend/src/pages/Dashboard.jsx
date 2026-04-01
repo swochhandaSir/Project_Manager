@@ -7,11 +7,11 @@ import { StatCard } from "../components/StatCard";
 import { FolderKanban, ListChecks, Users, TrendingUp } from "lucide-react";
 import { Link } from "react-router";
 function Dashboard() {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const myProjects = mockProjects.filter(
-    (p) => p.members.includes(user?._id || "") || p.owner === user?._id
+    (p) => p.members.includes(currentUser?._id || "") || p.owner === currentUser?._id
   );
-  const myTasks = mockTasks.filter((t) => t.assignedTo === user?._id);
+  const myTasks = mockTasks.filter((t) => t.assignedTo === currentUser?._id);
   const todoTasks = myTasks.filter((t) => t.status === "todo").length;
   const inProgressTasks = myTasks.filter((t) => t.status === "in-progress").length;
   const completedTasks = myTasks.filter((t) => t.status === "completed").length;
@@ -40,7 +40,7 @@ function Dashboard() {
             color: "#333",
           }}
         >
-          Welcome back, {user?.name}!
+          Welcome back, {currentUser?.name}!
         </h1>
 
         <p
