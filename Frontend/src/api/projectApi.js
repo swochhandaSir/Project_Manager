@@ -14,3 +14,13 @@ export const deleteProject = async (id) => {
   const res = await API.delete(`/projects/${id}`);
   return res.data;
 };
+
+export const getProjectById = async (id) => {
+  const res = await API.get(`/projects/${id}`);
+  return res.data;
+};
+
+export const updateProject = async (id, payload) => {
+  const res = await API.put(`/projects/${id}`, payload);
+  return res.data;
+};

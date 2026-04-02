@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { createProject } from "../api/projectApi";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -62,7 +62,7 @@ function CreateProject() {
     }
 
     try {
-      await API.post("/projects", payload);
+      await createProject(payload);
       toast.success("Project created successfully");
 
       navigate("/projects");

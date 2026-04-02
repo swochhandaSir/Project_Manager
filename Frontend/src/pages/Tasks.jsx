@@ -5,14 +5,14 @@ import { TaskColumn } from "../components/TaskColumn";
 import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import API from "../api/axios";
+import { getMyTasks, updateTask } from "../api/taskApi";
 function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const handleDrop = async (taskId, newStatus) => {
     try {
-      await API.put(`/task/${taskId}`, { status: newStatus });
+      await updateTask(taskId, { status: newStatus });
       setTasks((prev) =>
         prev.map((task) => (task._id === taskId ? { ...task, status: newStatus } : task)),
       );
@@ -27,8 +27,8 @@ function Tasks() {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/task/my");
-        setTasks(res.data);
+        const tasks = await getMyTasks();
+        setTasks(tasks);
       } catch (err) {
         console.error(err);
         toast.error(err.response?.data?.message || "Failed to load tasks");

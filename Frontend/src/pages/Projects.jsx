@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import API from "../api/axios";
+import { getProjects, updateProject } from "../api/projectApi";
 
 function Projects() {
 	const [projects, setProjects] = useState([]);
@@ -15,7 +15,7 @@ function Projects() {
 	const handleDrop = async (projectId, newStatus) => {
 		// Persist drag-and-drop status changes to the backend
 		try {
-			await API.put(`/projects/${projectId}`, { status: newStatus });
+			await updateProject(projectId, { status: newStatus });
 			setProjects((prev) =>
 				prev.map((project) =>
 					project._id === projectId ? { ...project, status: newStatus } : project,
@@ -32,8 +32,8 @@ function Projects() {
 		const loadProjects = async () => {
 			try {
 				setLoading(true);
-				const res = await API.get("/projects");
-				setProjects(res.data);
+				const projects = await getProjects();
+				setProjects(projects);
 			} catch (err) {
 				console.error(err);
 				toast.error(err.response?.data?.message || "Failed to load projects");
@@ -92,7 +92,7 @@ function Projects() {
 			</div>
 
 			<DndProvider backend={HTML5Backend}>
-				<div className="flex gap-0 overflow-x-auto">
+				<div className="flex gap-0 overflow-x-hidden">
 					<ProjectColumn
 						title="To Do"
 						status="active"

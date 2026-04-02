@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import API from "../api/axios";
 import { TaskColumn } from "../components/TaskColumn";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
@@ -17,6 +16,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { CalendarDays, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
+import { getProjectById, updateProject } from "../api/projectApi";
+import { createTask, getProjectTasks, updateTask } from "../api/taskApi";
+import { getUsers } from "../api/userApi";
 
 function ProjectDetails() {
   const { id } = useParams();
@@ -67,13 +69,13 @@ function ProjectDetails() {
     const load = async () => {
       try {
         setLoading(true);
-        const [projectRes, tasksRes] = await Promise.all([
-          API.get(`/projects/${id}`),
-          API.get(`/task/${id}`),
+        const [projectData, projectTasks] = await Promise.all([
+          getProjectById(id),
+          getProjectTasks(id),
         ]);
-        setProject(projectRes.data);
-        setTasks(tasksRes.data);
-        setSelectedMemberIds((projectRes.data?.members ?? []).map((m) => m?._id).filter(Boolean));
+        setProject(projectData);
+        setTasks(projectTasks);
+        setSelectedMemberIds((projectData?.members ?? []).map((m) => m?._id).filter(Boolean));
         setTaskForm((prev) => ({
           ...prev,
           assignedTo: currentUser?._id ?? null,
@@ -92,8 +94,8 @@ function ProjectDetails() {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const res = await API.get("/user");
-        setAllUsers(res.data);
+        const users = await getUsers();
+        setAllUsers(users);
       } catch (err) {
         console.error(err);
       }
@@ -104,7 +106,7 @@ function ProjectDetails() {
 
   const handleDrop = async (taskId, newStatus) => {
     try {
-      await API.put(`/task/${taskId}`, { status: newStatus });
+      await updateTask(taskId, { status: newStatus });
       setTasks((prev) =>
         prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t)),
       );
@@ -124,12 +126,11 @@ function ProjectDetails() {
 
     try {
       setCreating(true);
-      const res = await API.post("/task", createPayload);
-      const created = res.data;
+      await createTask(createPayload);
 
       // If the API didn't populate, fetch tasks again to keep TaskCard consistent.
-      const tasksRes = await API.get(`/task/${id}`);
-      setTasks(tasksRes.data);
+      const projectTasks = await getProjectTasks(id);
+      setTasks(projectTasks);
 
       setTaskForm({ title: "", description: "", priority: "medium", dueDate: null, assignedTo: currentUser?._id ?? null });
       setOpen(false);
@@ -185,8 +186,8 @@ function ProjectDetails() {
   const saveMembers = async () => {
     try {
       setSavingMembers(true);
-      const res = await API.put(`/projects/${id}`, { members: selectedMemberIds });
-      setProject(res.data);
+      const updated = await updateProject(id, { members: selectedMemberIds });
+      setProject(updated);
       setMembersOpen(false);
       toast.success("Members updated");
     } catch (err) {
@@ -302,7 +303,7 @@ function ProjectDetails() {
 
               <form onSubmit={handleCreateTask} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="taskTitle">Title *</Label>
+                <Label htmlFor="taskTitle">Title</Label>
                 <Input
                   id="taskTitle"
                   value={taskForm.title}

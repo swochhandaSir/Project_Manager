@@ -1,22 +1,80 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { mockProjects, mockTasks, mockUsers } from "../data/mockData";
 import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { StatCard } from "../components/StatCard";
-import { FolderKanban, ListChecks, Users, TrendingUp } from "lucide-react";
+import { FolderKanban, ListChecks, Users } from "lucide-react";
 import { Link } from "react-router";
+import { getProjects } from "../api/projectApi";
+import { getMyTasks } from "../api/taskApi";
+import { getUsers } from "../api/userApi";
 function Dashboard() {
-  const { currentUser } = useAuth();
-  const myProjects = mockProjects.filter(
-    (p) => p.members.includes(currentUser?._id || "") || p.owner === currentUser?._id
+  const { currentUser, authReady } = useAuth();
+  const [myProjects, setMyProjects] = useState([]);
+  const [myTasks, setMyTasks] = useState([]);
+  const [allUsersCount, setAllUsersCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authReady || !currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [projects, tasks, users] = await Promise.all([
+          getProjects(),
+          getMyTasks(),
+          getUsers(),
+        ]);
+
+        setMyProjects(projects);
+        setMyTasks(tasks);
+        setAllUsersCount(Array.isArray(users) ? users.length : 0);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [authReady, currentUser]);
+
+  const todoTasks = useMemo(
+    () => myTasks.filter((t) => t.status === "todo").length,
+    [myTasks],
   );
-  const myTasks = mockTasks.filter((t) => t.assignedTo === currentUser?._id);
-  const todoTasks = myTasks.filter((t) => t.status === "todo").length;
-  const inProgressTasks = myTasks.filter((t) => t.status === "in-progress").length;
-  const completedTasks = myTasks.filter((t) => t.status === "completed").length;
-  const completionRate = myTasks.length > 0 ? completedTasks / myTasks.length * 100 : 0;
-  const activeProjects = myProjects.filter((p) => p.status === "active").length;
+  const inProgressTasks = useMemo(
+    () => myTasks.filter((t) => t.status === "in-progress").length,
+    [myTasks],
+  );
+  const completedTasks = useMemo(
+    () => myTasks.filter((t) => t.status === "completed").length,
+    [myTasks],
+  );
+
+  const activeProjects = useMemo(
+    () => myProjects.filter((p) => p.status === "active").length,
+    [myProjects],
+  );
+
+  const teamMembersCount = useMemo(() => {
+    const ids = new Set();
+    for (const p of myProjects) {
+      if (p?.owner?._id) ids.add(String(p.owner._id));
+      if (p?.owner) ids.add(String(p.owner));
+      if (Array.isArray(p.members)) {
+        for (const m of p.members) {
+          if (m?._id) ids.add(String(m._id));
+          else if (m) ids.add(String(m));
+        }
+      }
+    }
+    return ids.size || allUsersCount;
+  }, [myProjects, allUsersCount]);
   const stickyColors = [
     { bg: "#FEFF9C", text: "#000" },
     { bg: "#FF7EB9", text: "#000" },
@@ -54,52 +112,58 @@ function Dashboard() {
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          {
-            title: "Total Projects",
-            value: myProjects.length,
-            subtitle: `${activeProjects} active`,
-            icon: FolderKanban,
-            color: stickyColors[0],
-          },
-          {
-            title: "My Tasks",
-            value: myTasks.length,
-            subtitle: `${inProgressTasks} in progress`,
-            icon: ListChecks,
-            color: stickyColors[1],
-          },
-          {
-            title: "Team Members",
-            value: mockUsers.length,
-            subtitle: "Active users",
-            icon: Users,
-            color: stickyColors[2],
-          },
-          {
-            title: "Completion Rate",
-            value: `${completionRate.toFixed(0)}%`,
-            subtitle: "Task completion",
-            icon: TrendingUp,
-            color: stickyColors[3],
-          },
-        ].map((stat, index) => {
-          const rotation = [2, -3, 3, -2][index];
-          return (
-            <StatCard
-              key={stat.title}
-              title={stat.title}
-              value={stat.value}
-              subtitle={stat.subtitle}
-              icon={stat.icon}
-              color={stat.color}
-              rotation={rotation}
-            />
-          );
-        })}
-      </div>
+      {loading ? (
+        <div
+          className="min-h-screen flex items-center justify-center text-gray-600"
+          style={{
+            background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
+          }}
+        >
+          Loading dashboard...
+        </div>
+      ) : (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[
+              {
+                title: "Total Projects",
+                value: myProjects.length,
+                subtitle: `${activeProjects} active`,
+                icon: FolderKanban,
+                color: stickyColors[0],
+              },
+              {
+                title: "My Tasks",
+                value: myTasks.length,
+                subtitle: `${inProgressTasks} in progress`,
+                icon: ListChecks,
+                color: stickyColors[1],
+              },
+              {
+                title: "Team Members",
+                value: teamMembersCount,
+                subtitle: "Active users",
+                icon: Users,
+                color: stickyColors[2],
+              },
+            ].map((stat, index) => {
+              const rotation = [2, -3, 3, -2][index];
+              return (
+                <StatCard
+                  key={stat.title}
+                  title={stat.title}
+                  value={stat.value}
+                  subtitle={stat.subtitle}
+                  icon={stat.icon}
+                  color={stat.color}
+                  rotation={rotation}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Overview + Recent */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -187,7 +251,7 @@ function Dashboard() {
 
           <div className="space-y-4">
             {myProjects.slice(0, 3).map((project) => (
-              <Link key={project._id} to={`/projects`}>
+              <Link key={project._id} to={`/projects/${project._id}`}>
                 <div className="p-3 bg-white/40 rounded-md hover:bg-white/60 transition-colors">
                   <div className="flex items-center justify-between mb-1">
                     <h4
@@ -243,12 +307,8 @@ function Dashboard() {
             .filter((t) => t.status !== "completed")
             .slice(0, 5)
             .map((task) => {
-              const assignedUser = mockUsers.find(
-                (u) => u._id === task.assignedTo
-              );
-              const project = mockProjects.find(
-                (p) => p._id === task.projectId
-              );
+              const assignedUser = task.assignedTo;
+              const project = task.projectId;
 
               return (
                 <div

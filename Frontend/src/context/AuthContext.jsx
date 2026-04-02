@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { getCurrentUser, loginRequest, logoutRequest, registerRequest } from "../api/authApi";
+import { getUsers } from "../api/userApi";
 
 const AuthContext = createContext(undefined);
 
@@ -9,31 +10,10 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
 
-  const API = axios.create({
-    baseURL: "http://localhost:3000/api",
-  });
-
-  API.interceptors.request.use((config) => {
-
-    const token = localStorage.getItem("accessToken");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  });
-
   // LOGIN
   const login = async (email, password) => {
     try {
-
-      const res = await API.post("/auth/login", {
-        email,
-        password,
-      });
-
-      const { accessToken } = res.data;
+      const { accessToken } = await loginRequest(email, password);
 
       localStorage.setItem("accessToken", accessToken);
 
@@ -50,12 +30,7 @@ export function AuthProvider({ children }) {
   // REGISTER
   const register = async (name, email, password) => {
     try {
-
-      await API.post("/auth/register", {
-        name,
-        email,
-        password,
-      });
+      await registerRequest(name, email, password);
 
       return true;
 
@@ -68,9 +43,8 @@ export function AuthProvider({ children }) {
   const fetchUsers = async () => {
     try {
 
-      const res = await API.get("/user");
-
-      setUser(res.data);
+      const users = await getUsers();
+      setUser(users);
 
     } catch (error) {
       console.error(error);
@@ -80,13 +54,11 @@ export function AuthProvider({ children }) {
   const fetchCurrentUser= async () => {
     try {
 
-      const res = await API.get("/auth/me");
-
-      setCurrentUser(res.data);
+      const me = await getCurrentUser();
+      setCurrentUser(me);
 
     } catch (error) {
       console.error(error);
-      // If the JWT is stale/invalid, clear it so the app doesn't keep failing on every refresh.
       const status = error?.response?.status;
       if (status === 401 || status === 404) {
         localStorage.removeItem("accessToken");
@@ -100,6 +72,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
 
     localStorage.removeItem("accessToken");
+    logoutRequest().catch(() => {});
 
     setUser(null);
     setCurrentUser(null);
