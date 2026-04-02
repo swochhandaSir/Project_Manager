@@ -3,6 +3,7 @@ import { errorHandler } from "./src/middleware/errorMiddleware.js";
 import routes from "./src/routes/index.js";
 import cors from "cors";
 import connectDb from "./src/config/db.js";
+import cookieParser from "cookie-parser";
 
 const port = 3000;
 
@@ -16,6 +17,7 @@ const startServer = async () => {
 	);
 	await connectDb();
 	app.use(express.json());
+	app.use(cookieParser());
 	app.use("/api", routes);
 	app.use(errorHandler);
 	app.listen(3000, () => {
