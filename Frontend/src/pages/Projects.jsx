@@ -92,7 +92,7 @@ function Projects() {
 			</div>
 
 			<DndProvider backend={HTML5Backend}>
-				<div className="flex gap-0 overflow-x-hidden">
+				<div className="flex gap-0 overflow-x-hidden overflow-y-hidden">
 					<ProjectColumn
 						title="To Do"
 						status="active"
