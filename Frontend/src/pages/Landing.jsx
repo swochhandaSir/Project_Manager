@@ -343,7 +343,7 @@ function Landing() {
             className="text-lg"
             style={{ fontFamily: "Indie Flower, cursive", color: "#666" }}
           >
-            © 2026 ProjectHub. Made with ❤️ for better project management.
+            © 2026 ProjectHub. Made for better project management.
           </p>
         </div>
       </footer>

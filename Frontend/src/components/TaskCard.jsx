@@ -2,9 +2,10 @@ import React from "react";
 import { useDrag } from "react-dnd";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Calendar, Flag } from "lucide-react";
+import { Calendar, Flag, Trash2 } from "lucide-react";
+import { Button } from "./ui/button";
 
-function TaskCard({ task }) {
+function TaskCard({ task, onDelete }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "TASK",
     item: { id: task._id, status: task.status },
@@ -43,6 +44,7 @@ function TaskCard({ task }) {
   const rotation = rotations.length ? rotations[hash % rotations.length] : 0;
 
   const dueText = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A";
+  const createdText = task.createdAt ? new Date(task.createdAt).toLocaleString() : "N/A";
 
   return (
     <div
@@ -108,6 +110,7 @@ function TaskCard({ task }) {
               {dueText}
             </span>
           </div>
+          <p className="text-xs opacity-80">Created: {createdText}</p>
 
           {/* Assigned User */}
           <div className="flex items-center gap-2 pt-2 border-t border-black/20">
@@ -122,6 +125,23 @@ function TaskCard({ task }) {
             </Avatar>
 
             <span className="text-sm">{assignedUser?.name ?? "Unassigned"}</span>
+
+          {onDelete && (
+            <div className="pt-1 ml-auto">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(task._id);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+              </Button>
+            </div>
+          )}
           </div>
         </div>
       </div>

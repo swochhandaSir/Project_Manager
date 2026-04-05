@@ -39,6 +39,9 @@ function ProjectCard({ project }) {
   const endText = project.endDate
     ? new Date(project.endDate).toLocaleDateString()
     : "N/A";
+  const createdText = project.createdAt
+    ? new Date(project.createdAt).toLocaleString()
+    : "N/A";
 
   return (
     <div
@@ -99,6 +102,7 @@ function ProjectCard({ project }) {
               {endText}
             </span>
           </div>
+          <p className="text-xs opacity-80">Created: {createdText}</p>
 
           {/* Members + Owner */}
           <div className="flex items-center justify-between pt-2 border-t border-black/20">

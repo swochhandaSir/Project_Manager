@@ -2,10 +2,15 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
   {
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      required: true
+    },
     taskId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Task",
-      required: true
+      default: null
     },
 
     userId: {

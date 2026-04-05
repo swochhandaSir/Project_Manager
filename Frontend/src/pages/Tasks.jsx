@@ -5,7 +5,7 @@ import { TaskColumn } from "../components/TaskColumn";
 import { Button } from "../components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { getMyTasks, updateTask } from "../api/taskApi";
+import { deleteTask, getMyTasks, updateTask } from "../api/taskApi";
 function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +20,17 @@ function Tasks() {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || "Failed to update task status");
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(taskId);
+      setTasks((prev) => prev.filter((task) => task._id !== taskId));
+      toast.success("Task deleted");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete task");
     }
   };
 
@@ -76,10 +87,6 @@ function Tasks() {
           </h1>
         </div>
 
-        <Button className="gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-lg" disabled>
-          <Plus className="w-4 h-4" />
-          New Task
-        </Button>
       </div>
 
       <DndProvider backend={HTML5Backend}>
@@ -90,6 +97,7 @@ function Tasks() {
             tasks={todoTasks}
             color="bg-gray-400"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
 
           <TaskColumn
@@ -98,6 +106,7 @@ function Tasks() {
             tasks={inProgressTasks}
             color="bg-blue-500"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
 
           <TaskColumn
@@ -106,6 +115,7 @@ function Tasks() {
             tasks={completedTasks}
             color="bg-green-500"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
         </div>
       </DndProvider>

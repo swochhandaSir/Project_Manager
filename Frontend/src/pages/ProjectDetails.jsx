@@ -4,21 +4,24 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TaskColumn } from "../components/TaskColumn";
 import { Button } from "../components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Checkbox } from "../components/ui/checkbox";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Textarea } from "../components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Calendar as DatePicker } from "../components/ui/calendar";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
-import { CalendarDays, Plus, Users } from "lucide-react";
+import { CalendarDays, MessageSquare, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
-import { getProjectById, updateProject } from "../api/projectApi";
-import { createTask, getProjectTasks, updateTask } from "../api/taskApi";
+import { deleteProject, getProjectById, updateProject } from "../api/projectApi";
+import { createTask, deleteTask, getProjectTasks, updateTask } from "../api/taskApi";
 import { getUsers } from "../api/userApi";
+import { createComment, deleteComment, getProjectComments } from "../api/commentApi";
 
 function ProjectDetails() {
   const { id } = useParams();
@@ -34,6 +37,8 @@ function ProjectDetails() {
   const [membersOpen, setMembersOpen] = useState(false);
   const [savingMembers, setSavingMembers] = useState(false);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+  const [projectComments, setProjectComments] = useState([]);
+  const [projectCommentText, setProjectCommentText] = useState("");
 
   const [taskForm, setTaskForm] = useState({
     title: "",
@@ -73,8 +78,10 @@ function ProjectDetails() {
           getProjectById(id),
           getProjectTasks(id),
         ]);
+        const pComments = await getProjectComments(id);
         setProject(projectData);
         setTasks(projectTasks);
+        setProjectComments(pComments);
         setSelectedMemberIds((projectData?.members ?? []).map((m) => m?._id).filter(Boolean));
         setTaskForm((prev) => ({
           ...prev,
@@ -114,6 +121,17 @@ function ProjectDetails() {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || "Failed to update task");
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(taskId);
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+      toast.success("Task deleted");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete task");
     }
   };
 
@@ -198,6 +216,43 @@ function ProjectDetails() {
     }
   };
 
+  const handleDeleteProject = async () => {
+    try {
+      await deleteProject(id);
+      toast.success("Project deleted");
+      navigate("/projects");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete project");
+    }
+  };
+
+  const submitProjectComment = async (e) => {
+    e.preventDefault();
+    if (!projectCommentText.trim()) return;
+    try {
+      const created = await createComment({
+        projectId: id,
+        message: projectCommentText,
+      });
+      setProjectComments((prev) => [created, ...prev]);
+      setProjectCommentText("");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to add comment");
+    }
+  };
+
+  const removeComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      setProjectComments((prev) => prev.filter((c) => c._id !== commentId));
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete comment");
+    }
+  };
+
   return (
     <div
       className="min-h-screen p-8"
@@ -232,6 +287,9 @@ function ProjectDetails() {
           >
             {project.description || "No description"}
           </p>
+          <p className="text-sm text-gray-600 mt-2">
+            Created: {project.createdAt ? new Date(project.createdAt).toLocaleString() : "N/A"}
+          </p>
 
           <div className="flex items-center gap-2 mt-4 text-sm text-gray-700">
             <Users className="w-4 h-4" />
@@ -240,6 +298,66 @@ function ProjectDetails() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Comments
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="sm:max-w-md">
+              <SheetHeader>
+                <SheetTitle>Project Comments</SheetTitle>
+              </SheetHeader>
+              <div className="px-4 pb-4 flex flex-col gap-3">
+                <form onSubmit={submitProjectComment} className="flex gap-2">
+                  <Input
+                    value={projectCommentText}
+                    onChange={(e) => setProjectCommentText(e.target.value)}
+                    placeholder="Write a project comment..."
+                  />
+                  <Button type="submit">Post</Button>
+                </form>
+                <ScrollArea className="h-[70vh] pr-2">
+                  <div className="space-y-2">
+                    {projectComments.map((c) => (
+                      <div
+                        key={c._id}
+                        className="p-3 rounded-sm border border-black/10 text-sm"
+                        style={{
+                          backgroundColor: "#FEFF9C",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        <div className="flex justify-between items-start gap-2 mb-1">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="w-7 h-7 border border-white">
+                              <AvatarImage src={c.userId?.avatar} alt={c.userId?.name} />
+                              <AvatarFallback className="text-xs">
+                                {(c.userId?.name ?? "?").charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="leading-tight">
+                              <p className="font-medium">{c.userId?.name ?? "User"}</p>
+                              <p className="text-[11px] text-gray-600">
+                                {c.createdAt ? new Date(c.createdAt).toLocaleString() : "just now"}
+                              </p>
+                            </div>
+                          </div>
+                          {String(c.userId?._id) === String(currentUser?._id) && (
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 " onClick={() => removeComment(c._id)}>
+                              <Trash2 className="w-4 h-4 mr-1" />
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-[15px]" style={{ fontFamily: "Indie Flower, cursive" }}>{c.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Dialog open={membersOpen} onOpenChange={setMembersOpen}>
             <DialogTrigger asChild>
               <Button
@@ -398,6 +516,7 @@ function ProjectDetails() {
             tasks={todoTasks}
             color="bg-gray-400"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
 
           <TaskColumn
@@ -406,6 +525,7 @@ function ProjectDetails() {
             tasks={inProgressTasks}
             color="bg-blue-500"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
 
           <TaskColumn
@@ -414,9 +534,17 @@ function ProjectDetails() {
             tasks={completedTasks}
             color="bg-green-500"
             onDrop={handleDrop}
+            onDeleteTask={handleDeleteTask}
           />
         </div>
       </DndProvider>
+
+      <div className="mt-8 flex justify-end">
+        <Button variant="destructive" className="gap-2" onClick={handleDeleteProject}>
+          <Trash2 className="w-4 h-4" />
+          Delete Project
+        </Button>
+      </div>
     </div>
   );
 }

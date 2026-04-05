@@ -8,6 +8,6 @@ export const access = (user) => {
 
 export const refresh = (user) => {
 	return jwt.sign({ id: user._id, email: user.email }, process.env.REFRESH_TOKEN, {
-		expiresIn: "10m",
+		expiresIn: "1d",
 	});
 };

@@ -92,7 +92,18 @@ export const updateProject = asyncHandler(async (req, res) => {
 });
 
 export const deleteProject = asyncHandler(async (req, res) => {
-	await projectSchema.findByIdAndDelete(req.params.id);
+	if (!req.user) {
+		return res.status(401).json({ message: "Not authorized" });
+	}
+	const project = await projectSchema.findById(req.params.id);
+	if (!project) {
+		return res.status(404).json({ message: "Project not found" });
+	}
+	if (String(project.owner) !== String(req.user.id)) {
+		return res.status(403).json({ message: "Only project owner can delete project" });
+	}
+
+	await project.deleteOne();
 
 	res.json({ message: "Project deleted" });
 });

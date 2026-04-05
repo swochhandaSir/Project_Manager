@@ -15,13 +15,6 @@ const refreshCookieOptions = {
 const clearRefreshCookies = (res) => {
 	// Clear current cookie path
 	res.clearCookie("RefreshToken", refreshCookieOptions);
-	// Clear legacy cookie path from older implementation
-	res.clearCookie("RefreshToken", {
-		httpOnly: true,
-		sameSite: "lax",
-		secure: isProd,
-		path: "/api/auth",
-	});
 };
 
 export const registerUser = asyncHandler(async (req, res) => {

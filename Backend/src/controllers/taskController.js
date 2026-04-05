@@ -74,8 +74,24 @@ export const updateTask = asyncHandler(async (req, res) => {
 
 
 export const deleteTask = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
 
-  await taskSchema.findByIdAndDelete(req.params.id);
+  const task = await taskSchema.findById(req.params.id);
+  if (!task) {
+    return res.status(404).json({ message: "Task not found" });
+  }
+
+  const project = await projectSchema.findOne({
+    _id: task.projectId,
+    $or: [{ owner: req.user.id }, { members: req.user.id }],
+  });
+  if (!project) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await task.deleteOne();
 
   res.json({ message: "Task deleted" });
 });

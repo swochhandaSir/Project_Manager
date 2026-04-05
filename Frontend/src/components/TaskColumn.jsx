@@ -2,7 +2,7 @@ import React from "react";
 import { useDrop } from "react-dnd";
 import { TaskCard } from "./TaskCard";
 
-function TaskColumn({ title, status, tasks, color, onDrop }) {
+function TaskColumn({ title, status, tasks, color, onDrop, onDeleteTask }) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "TASK",
     drop: (item) => {
@@ -54,7 +54,7 @@ function TaskColumn({ title, status, tasks, color, onDrop }) {
       {/* Tasks List */}
       <div className="space-y-6">
         {sortedTasks.map((task) => (
-          <TaskCard key={task._id} task={task} />
+          <TaskCard key={task._id} task={task} onDelete={onDeleteTask} />
         ))}
       </div>
     </div>

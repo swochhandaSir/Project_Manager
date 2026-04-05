@@ -93,7 +93,7 @@ function Navbar() {
 								}}
 							>
 								<ListChecks className="w-5 h-5" />
-								Tasks
+								My Tasks
 							</Button>
 						</Link>
 					</div>
