@@ -4,6 +4,7 @@ import routes from "./src/routes/index.js";
 import cors from "cors";
 import connectDb from "./src/config/db.js";
 import cookieParser from "cookie-parser";
+import { startDueReminderCron } from "./src/services/dueReminders.js";
 
 const port = 3000;
 
@@ -16,6 +17,7 @@ const startServer = async () => {
 		}),
 	);
 	await connectDb();
+	startDueReminderCron();
 	app.use(express.json());
 	app.use(cookieParser());
 	app.use("/api", routes);
