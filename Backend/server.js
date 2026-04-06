@@ -7,12 +7,22 @@ import cookieParser from "cookie-parser";
 import { startDueReminderCron } from "./src/services/dueReminders.js";
 
 const port = 3000;
+const allowedOrigins = [
+	process.env.FRONTEND_URL,
+	"http://localhost:5173",
+].filter(Boolean);
 
 const startServer = async () => {
 	const app = express();
 	app.use(
 		cors({
-			origin: "http://localhost:5173",
+			origin: (origin, callback) => {
+				if (!origin || allowedOrigins.includes(origin)) {
+					return callback(null, true);
+				}
+
+				return callback(new Error("Not allowed by CORS"));
+			},
 			credentials: true,
 		}),
 	);
