@@ -5,20 +5,23 @@ import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { LogIn } from "lucide-react";
+import { LoaderCircle, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
 function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const navigate = useNavigate();
 	const { login } = useAuth();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if (isSubmitting) return;
+
+		setIsSubmitting(true);
 		try {
 			const success = await login(email, password);
-
 			if (success) {
 				toast.success("Login successful!");
 				navigate("/dashboard");
@@ -27,6 +30,8 @@ function Login() {
 			}
 		} catch (error) {
 			toast.error(error.response?.data?.message || "Login failed");
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 	return (
@@ -122,9 +127,26 @@ function Login() {
 
 					<Button
 						type="submit"
-						className="w-full bg-blue-500 hover:bg-blue-600"
+						disabled={isSubmitting}
+						className={`w-full bg-blue-500 hover:bg-blue-600 relative overflow-hidden transition-all duration-200 ${
+							isSubmitting ? "scale-[0.98] shadow-inner" : "hover:scale-[1.01] hover:shadow-lg"
+						}`}
 					>
-						Sign In
+						<span
+							className={`absolute inset-0 bg-linear-to-r from-white/0 via-white/30 to-white/0 transition-transform duration-700 ${
+								isSubmitting ? "translate-x-full" : "-translate-x-full"
+							}`}
+						/>
+						<span className="relative flex items-center justify-center gap-2">
+							{isSubmitting ? (
+								<>
+									<LoaderCircle className="w-4 h-4 animate-spin" />
+									Signing In...
+								</>
+							) : (
+								"Sign In"
+							)}
+						</span>
 					</Button>
 				</form>
 

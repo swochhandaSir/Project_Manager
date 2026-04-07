@@ -1,9 +1,16 @@
 import axios from "axios";
 
+export const AUTH_EXPIRED_EVENT = "auth:expired";
+
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true
 });
+
+const notifyAuthExpired = () => {
+  localStorage.removeItem("accessToken");
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+};
 
 // attach accessToken automatically
 API.interceptors.request.use((req) => {
@@ -22,7 +29,15 @@ API.interceptors.response.use(
     const original = error?.config;
     const status = error?.response?.status;
 
-    if (!original || original.url?.includes("/auth/refresh")) {
+    if (original?.url?.includes("/auth/refresh")) {
+      if (status === 401) {
+        notifyAuthExpired();
+      }
+
+      return Promise.reject(error);
+    }
+
+    if (!original) {
       return Promise.reject(error);
     }
 
@@ -36,7 +51,7 @@ API.interceptors.response.use(
         }
         return API(original);
       } catch (refreshErr) {
-        localStorage.removeItem("accessToken");
+        notifyAuthExpired();
         return Promise.reject(refreshErr);
       }
     }

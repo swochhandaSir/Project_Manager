@@ -18,10 +18,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { CalendarDays, MessageSquare, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
+import { Skeleton } from "../components/ui/skeleton";
 import { deleteProject, getProjectById, updateProject } from "../api/projectApi";
 import { createTask, deleteTask, getProjectTasks, updateTask } from "../api/taskApi";
 import { getUsers } from "../api/userApi";
 import { createComment, deleteComment, getProjectComments } from "../api/commentApi";
+import { SkeletonCard } from "../components/SkeletonCard";
 
 function ProjectDetails() {
   const { id } = useParams();
@@ -164,12 +166,72 @@ function ProjectDetails() {
   if (loading) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-screen p-8"
         style={{
           background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
         }}
       >
-        Loading project...
+        <div className="w-full">
+          <div className="flex items-center justify-between mb-12 gap-6">
+            <div className="flex-1">
+              <Skeleton className="h-10 w-36 mb-4 bg-white/55" />
+              <Skeleton className="h-12 w-3/5 mb-3 bg-white/60" />
+              <Skeleton className="h-6 w-4/5 mb-3 bg-white/45" />
+              <Skeleton className="h-4 w-40 mb-4 bg-white/40" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded-full bg-white/50" />
+                <Skeleton className="h-4 w-24 bg-white/40" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-28 bg-white/55" />
+              <Skeleton className="h-10 w-28 bg-white/55" />
+              <Skeleton className="h-10 w-32 bg-white/55" />
+            </div>
+          </div>
+
+          <div className="flex gap-0 overflow-x-auto">
+            {["To Do", "Doing", "Done"].map((title, columnIndex) => (
+              <div
+                key={title}
+                className="flex-1 min-w-[350px] p-6"
+                style={{
+                  borderRight: title !== "Done" ? "3px solid #333" : "none",
+                }}
+              >
+                <div className="mb-8">
+                  <h3
+                    className="text-3xl font-bold mb-2"
+                    style={{
+                      fontFamily: "Indie Flower, cursive",
+                      color: "#333",
+                    }}
+                  >
+                    {title}
+                  </h3>
+
+                  <div className="h-1 bg-black/80 rounded-full" style={{ width: "80%" }} />
+                </div>
+
+                <div className="space-y-6">
+                  {["#FEFF9C", "#FF7EB9"].map((color, cardIndex) => (
+                    <SkeletonCard
+                      key={`${title}-${cardIndex}`}
+                      variant="task-card"
+                      color={color}
+                      rotation={[2, -3, 3, -2][(columnIndex + cardIndex) % 4]}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-end">
+            <Skeleton className="h-10 w-36 bg-white/55" />
+          </div>
+        </div>
       </div>
     );
   }

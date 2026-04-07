@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { UserPlus } from "lucide-react";
+import { LoaderCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 function Register() {
@@ -13,15 +13,20 @@ function Register() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const navigate = useNavigate();
 	const { register } = useAuth();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if (isSubmitting) return;
+
 		if (password !== confirmPassword) {
 			toast.error("Passwords do not match");
 			return;
 		}
+
+		setIsSubmitting(true);
 		try {
 			const success = await register(name, email, password);
 
@@ -33,6 +38,8 @@ function Register() {
 			navigate("/login");
 		} catch (error) {
 			toast.error(error.response?.data?.message || "Registration failed");
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
   return (
@@ -163,9 +170,26 @@ function Register() {
 
           <Button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600"
+            disabled={isSubmitting}
+            className={`w-full bg-blue-500 hover:bg-blue-600 relative overflow-hidden transition-all duration-200 ${
+              isSubmitting ? "scale-[0.98] shadow-inner" : "hover:scale-[1.01] hover:shadow-lg"
+            }`}
           >
-            Sign Up
+            <span
+              className={`absolute inset-0 bg-linear-to-r from-white/0 via-white/30 to-white/0 transition-transform duration-700 ${
+                isSubmitting ? "translate-x-full" : "-translate-x-full"
+              }`}
+            />
+            <span className="relative flex items-center justify-center gap-2">
+              {isSubmitting ? (
+                <>
+                  <LoaderCircle className="w-4 h-4 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                "Sign Up"
+              )}
+            </span>
           </Button>
         </form>
 

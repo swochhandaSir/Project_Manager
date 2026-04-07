@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { StatCard } from "../components/StatCard";
+import { SkeletonCard } from "../components/SkeletonCard";
 import { FolderKanban, ListChecks, Users } from "lucide-react";
 import { Link } from "react-router";
 import { getProjects } from "../api/projectApi";
@@ -17,6 +18,9 @@ function Dashboard() {
 
   useEffect(() => {
     if (!authReady || !currentUser) {
+      setMyProjects([]);
+      setMyTasks([]);
+      setAllUsersCount(0);
       setLoading(false);
       return;
     }
@@ -89,6 +93,50 @@ function Dashboard() {
         background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
       }}
     >
+      {loading ? (
+        <>
+          <div className="mb-8">
+            <h1
+              className="text-5xl font-bold mb-2"
+              style={{
+                fontFamily: "Indie Flower, cursive",
+                color: "#333",
+              }}
+            >
+              Welcome back...
+            </h1>
+
+            <p
+              className="text-xl"
+              style={{
+                fontFamily: "Indie Flower, cursive",
+                color: "#666",
+              }}
+            >
+              Loading your dashboard.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[stickyColors[0], stickyColors[1], stickyColors[2]].map((color, index) => (
+              <SkeletonCard
+                key={index}
+                variant="stat"
+                color={color.bg}
+                rotation={[2, -3, 3][index]}
+              />
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <SkeletonCard variant="list" color="#FEFF9C" rotation={-1} />
+            <SkeletonCard variant="projects" color="#FF7EB9" rotation={2} />
+          </div>
+
+          <SkeletonCard variant="tasks" color="#7AFCFF" rotation={1} items={5} />
+        </>
+      ) : (
+        <>
       {/* Header */}
       <div className="mb-8">
         <h1
@@ -112,17 +160,6 @@ function Dashboard() {
         </p>
       </div>
 
-      {loading ? (
-        <div
-          className="min-h-screen flex items-center justify-center text-gray-600"
-          style={{
-            background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
-          }}
-        >
-          Loading dashboard...
-        </div>
-      ) : (
-        <>
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {[
@@ -162,8 +199,6 @@ function Dashboard() {
               );
             })}
           </div>
-        </>
-      )}
 
       {/* Overview + Recent */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -249,10 +284,10 @@ function Dashboard() {
             Recent Projects
           </h3>
 
-          <div className="space-y-4">
-            {myProjects.slice(0, 3).map((project) => (
+        <div className="space-y-4">
+          {myProjects.slice(0, 3).map((project) => (
               <Link key={project._id} to={`/projects/${project._id}`}>
-                <div className="p-3 bg-white/40 rounded-md hover:bg-white/60 transition-colors">
+                <div className="p-3 bg-white/10 rounded-md hover:bg-white/60 transition-colors">
                   <div className="flex items-center justify-between mb-1">
                     <h4
                       className="text-lg font-bold"
@@ -313,7 +348,7 @@ function Dashboard() {
               return (
                 <div
                   key={task._id}
-                  className="flex items-center gap-4 p-4 bg-white/40 rounded-md"
+                  className="flex items-center gap-4 p-4 bg-white/10 rounded-md"
                 >
                   <Avatar className="w-10 h-10 border-2 border-white">
                     <AvatarImage
@@ -367,6 +402,8 @@ function Dashboard() {
             })}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

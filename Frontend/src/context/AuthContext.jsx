@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { getCurrentUser, loginRequest, logoutRequest, registerRequest } from "../api/authApi";
+import { AUTH_EXPIRED_EVENT } from "../api/axios";
 import { getUsers } from "../api/userApi";
 
 const AuthContext = createContext(undefined);
@@ -9,6 +10,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+
+  const clearSession = useCallback(() => {
+    localStorage.removeItem("accessToken");
+    setCurrentUser(null);
+    setUser(null);
+  }, []);
 
   // LOGIN
   const login = async (email, password) => {
@@ -61,9 +68,7 @@ export function AuthProvider({ children }) {
       console.error(error);
       const status = error?.response?.status;
       if (status === 401 || status === 404) {
-        localStorage.removeItem("accessToken");
-        setCurrentUser(null);
-        setUser(null);
+        clearSession();
       }
     }
   };
@@ -71,23 +76,15 @@ export function AuthProvider({ children }) {
   // LOGOUT
   const logout = () => {
 
-    localStorage.removeItem("accessToken");
+    clearSession();
     logoutRequest().catch(() => {});
-
-    setUser(null);
-    setCurrentUser(null);
   };
 
   // load session on refresh
   useEffect(() => {
 
     const init = async () => {
-
-      const token = localStorage.getItem("accessToken");
-
-      if (token) {
-        await Promise.all([fetchCurrentUser()]);
-      }
+      await fetchCurrentUser();
 
       setAuthReady(true);
 
@@ -96,6 +93,18 @@ export function AuthProvider({ children }) {
     init();
 
   }, []);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      clearSession();
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    };
+  }, [clearSession]);
 
   return (
     <AuthContext.Provider

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -20,6 +20,23 @@ import {
 function Navbar() {
 	const { currentUser, logout } = useAuth();
 	const navigate = useNavigate();
+	const location = useLocation();
+
+	const isActiveRoute = (path) => {
+		if (path === "/projects") {
+			return location.pathname.startsWith("/projects");
+		}
+
+		return location.pathname === path;
+	};
+
+	const navButtonClass = (path) =>
+		`gap-2 transition-all ${
+			isActiveRoute(path)
+				? "text-blue-700 font-semibold shadow-md scale-[1.02]"
+				: "hover:bg-white/50"
+		}`;
+
 	const handleLogout = () => {
 		logout();
 		navigate("/login");
@@ -58,7 +75,7 @@ function Navbar() {
 						<Link to="/dashboard">
 							<Button
 								variant="ghost"
-								className="gap-2 hover:bg-white/50"
+								className={navButtonClass("/dashboard")}
 								style={{
 									fontFamily: "Indie Flower, cursive",
 									fontSize: "18px",
@@ -72,7 +89,7 @@ function Navbar() {
 						<Link to="/projects">
 							<Button
 								variant="ghost"
-								className="gap-2 hover:bg-white/50"
+								className={navButtonClass("/projects")}
 								style={{
 									fontFamily: "Indie Flower, cursive",
 									fontSize: "18px",
@@ -86,7 +103,7 @@ function Navbar() {
 						<Link to="/tasks">
 							<Button
 								variant="ghost"
-								className="gap-2 hover:bg-white/50"
+								className={navButtonClass("/tasks")}
 								style={{
 									fontFamily: "Indie Flower, cursive",
 									fontSize: "18px",
