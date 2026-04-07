@@ -9,7 +9,6 @@ import { startDueReminderCron } from "./src/services/dueReminders.js";
 const port = 3000;
 const allowedOrigins = [
 	process.env.FRONTEND_URL,
-	"http://localhost:5173",
 ].filter(Boolean);
 
 const startServer = async () => {
