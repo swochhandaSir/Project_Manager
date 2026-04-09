@@ -53,10 +53,10 @@ function TaskCard({ task, onDelete }) {
         opacity: isDragging ? 0.5 : 1,
         transform: `rotate(${rotation}deg)`,
       }}
-      className="cursor-move hover:scale-105 transition-all"
+      className="cursor-move transition-all hover:scale-[1.02]"
     >
       <div
-        className="relative p-4 rounded-sm min-h-[150px]"
+        className="relative min-h-[150px] rounded-sm p-4"
         style={{
           backgroundColor: stickyColors[colorIndex].bg,
           color: stickyColors[colorIndex].text,
@@ -71,15 +71,14 @@ function TaskCard({ task, onDelete }) {
           className="space-y-3"
           style={{ fontFamily: "Indie Flower, cursive" }}
         >
-          {/* Title + Priority */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-lg font-bold leading-tight">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <h3 className="text-base font-bold leading-tight sm:text-lg">
               {task.title}
             </h3>
 
             <Badge
               variant="secondary"
-              className={`${priorityColors[task.priority]} text-xs border-none`}
+              className={`${priorityColors[task.priority]} w-fit border-none text-xs`}
               style={{ fontFamily: "sans-serif" }}
             >
               <Flag className="w-3 h-3 mr-1" />
@@ -87,13 +86,11 @@ function TaskCard({ task, onDelete }) {
             </Badge>
           </div>
 
-          {/* Description */}
           <p className="text-base line-clamp-2 leading-snug">
             {task.description}
           </p>
 
-          {/* Project */}
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <Badge
               variant="outline"
               className="text-xs border-black/30 bg-white/70"
@@ -103,8 +100,7 @@ function TaskCard({ task, onDelete }) {
             </Badge>
           </div>
 
-          {/* Due Date */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <Calendar className="w-4 h-4" />
             <span>
               {dueText}
@@ -112,36 +108,37 @@ function TaskCard({ task, onDelete }) {
           </div>
           <p className="text-xs opacity-80">Created: {createdText}</p>
 
-          {/* Assigned User */}
-          <div className="flex items-center gap-2 pt-2 border-t border-black/20">
-            <Avatar className="w-6 h-6 border-2 border-white">
-              <AvatarImage
-                src={assignedUser?.avatar}
-                alt={assignedUser?.name}
-              />
-              <AvatarFallback className="text-xs">
-                {(assignedUser?.name ?? "?").charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+          <div className="flex flex-col gap-3 border-t border-black/20 pt-2 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-center gap-2">
+              <Avatar className="w-6 h-6 border-2 border-white">
+                <AvatarImage
+                  src={assignedUser?.avatar}
+                  alt={assignedUser?.name}
+                />
+                <AvatarFallback className="text-xs">
+                  {(assignedUser?.name ?? "?").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
 
-            <span className="text-sm">{assignedUser?.name ?? "Unassigned"}</span>
-
-          {onDelete && (
-            <div className="pt-1 ml-auto">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(task._id);
-                }}
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-              </Button>
+              <span className="truncate text-sm">{assignedUser?.name ?? "Unassigned"}</span>
             </div>
-          )}
+
+            {onDelete && (
+              <div className="sm:ml-auto">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(task._id);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -13,9 +13,9 @@ import { SkeletonCard } from "../components/SkeletonCard";
 function Projects() {
 	const [projects, setProjects] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const navigate = useNavigate();
 
 	const handleDrop = async (projectId, newStatus) => {
-		// Persist drag-and-drop status changes to the backend
 		try {
 			await updateProject(projectId, { status: newStatus });
 			setProjects((prev) =>
@@ -34,8 +34,8 @@ function Projects() {
 		const loadProjects = async () => {
 			try {
 				setLoading(true);
-				const projects = await getProjects();
-				setProjects(projects);
+				const projectsData = await getProjects();
+				setProjects(projectsData);
 			} catch (err) {
 				console.error(err);
 				toast.error(err.response?.data?.message || "Failed to load projects");
@@ -49,42 +49,40 @@ function Projects() {
 
 	const activeProjects = projects.filter((p) => p.status === "active");
 	const completedProjects = projects.filter((p) => p.status === "completed");
-	const navigate = useNavigate();
-	const openCreateProject = () => {
-		navigate("/projects/new");
-	};
 
 	if (loading) {
 		return (
 			<div
-				className="min-h-screen p-8"
+				className="min-h-screen px-4 py-6 sm:px-6 sm:py-8"
 				style={{
 					background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
 				}}
 			>
-				<div className="w-full">
-					<div className="flex items-center justify-between mb-12">
+				<div className="mx-auto w-full max-w-7xl">
+					<div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<Skeleton className="h-12 w-72 mb-3 bg-white/60" />
+							<Skeleton className="mb-3 h-12 w-72 bg-white/60" />
 							<Skeleton className="h-5 w-48 bg-white/40" />
 						</div>
-
-						<Skeleton className="h-10 w-36 bg-white/55" />
+						<Skeleton className="h-10 w-full max-w-[9rem] bg-white/55" />
 					</div>
 
-					<div className="flex gap-0 overflow-x-hidden overflow-y-hidden">
+					<div className="grid grid-cols-1 overflow-hidden rounded-sm border-3 border-black/80 bg-white/10 md:grid-cols-2">
 						{[
 							{ title: "To Do", border: true, colors: ["#FEFF9C", "#FF7EB9"] },
 							{ title: "Done", border: false, colors: ["#7AFCFF", "#A0FF7A"] },
 						].map((column) => (
 							<div
 								key={column.title}
-								className="flex-1 min-w-[350px] p-6"
-								style={{ borderRight: column.border ? "3px solid #333" : "none" }}
+								className="p-4 sm:p-6"
+								style={{
+									borderRight: column.border ? "3px solid #333" : "none",
+									borderBottom: column.border ? "3px solid #333" : "none",
+								}}
 							>
 								<div className="mb-8">
 									<h3
-										className="text-3xl font-bold mb-2"
+										className="mb-2 text-2xl font-bold sm:text-3xl"
 										style={{
 											fontFamily: "Indie Flower, cursive",
 											color: "#333",
@@ -92,7 +90,7 @@ function Projects() {
 									>
 										{column.title}
 									</h3>
-									<div className="h-1 bg-black/80 rounded-full" style={{ width: "80%" }} />
+									<div className="h-1 rounded-full bg-black/80" style={{ width: "80%" }} />
 								</div>
 
 								<div className="space-y-6">
@@ -115,47 +113,52 @@ function Projects() {
 
 	return (
 		<div
-			className="min-h-screen p-8"
+			className="min-h-screen px-4 py-6 sm:px-6 sm:py-8"
 			style={{
 				background: "linear-gradient(135deg, #E8F4F8 0%, #D4E7ED 100%)",
 			}}
 		>
-			<div className="flex items-center justify-between mb-12">
-				<div>
-					<h1
-						className="text-5xl font-bold mb-2"
-						style={{
-							fontFamily: "Indie Flower, cursive",
-							color: "#333",
-						}}
+			<div className="mx-auto max-w-7xl">
+				<div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<h1
+							className="mb-2 text-3xl font-bold sm:text-4xl lg:text-5xl"
+							style={{
+								fontFamily: "Indie Flower, cursive",
+								color: "#333",
+							}}
+						>
+							Project Management
+						</h1>
+					</div>
+
+					<Button
+						onClick={() => navigate("/projects/new")}
+						className="w-full gap-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 sm:w-auto"
 					>
-						Project Management
-					</h1>
+						<Plus className="w-4 h-4" />
+						New Project
+					</Button>
 				</div>
 
-				<Button onClick={openCreateProject} className="gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
-					<Plus className="w-4 h-4" />
-					New Project
-				</Button>
+				<DndProvider backend={HTML5Backend}>
+					<div className="grid grid-cols-1 overflow-hidden rounded-sm border-3 border-black/80 bg-white/10 md:grid-cols-2">
+						<ProjectColumn
+							title="To Do"
+							status="active"
+							projects={activeProjects}
+							onDrop={handleDrop}
+						/>
+
+						<ProjectColumn
+							title="Done"
+							status="completed"
+							projects={completedProjects}
+							onDrop={handleDrop}
+						/>
+					</div>
+				</DndProvider>
 			</div>
-
-			<DndProvider backend={HTML5Backend}>
-				<div className="flex gap-0 overflow-x-hidden overflow-y-hidden">
-					<ProjectColumn
-						title="To Do"
-						status="active"
-						projects={activeProjects}
-						onDrop={handleDrop}
-					/>
-
-					<ProjectColumn
-						title="Done"
-						status="completed"
-						projects={completedProjects}
-						onDrop={handleDrop}
-					/>
-				</div>
-			</DndProvider>
 		</div>
 	);
 }

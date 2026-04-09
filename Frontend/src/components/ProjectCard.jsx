@@ -50,11 +50,11 @@ function ProjectCard({ project }) {
         opacity: isDragging ? 0.5 : 1,
         transform: `rotate(${rotation}deg)`,
       }}
-      className="cursor-pointer hover:scale-105 transition-all"
+      className="cursor-pointer transition-all hover:scale-[1.02]"
       onClick={() => project?._id && navigate(`/projects/${project._id}`)}
     >
       <div
-        className="relative p-5 rounded-sm min-h-[200px]"
+        className="relative min-h-[200px] rounded-sm p-4 sm:p-5"
         style={{
           backgroundColor: stickyColors[colorIndex].bg,
           color: stickyColors[colorIndex].text,
@@ -69,9 +69,8 @@ function ProjectCard({ project }) {
           className="space-y-3"
           style={{ fontFamily: "Indie Flower, cursive" }}
         >
-          {/* Title + Status */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-xl font-bold leading-tight">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <h3 className="text-lg font-bold leading-tight sm:text-xl">
               {project.title}
             </h3>
 
@@ -79,20 +78,18 @@ function ProjectCard({ project }) {
               variant={
                 project.status === "active" ? "default" : "secondary"
               }
-              className="text-xs"
+              className="w-fit text-xs"
               style={{ fontFamily: "sans-serif" }}
             >
               {project.status}
             </Badge>
           </div>
 
-          {/* Description */}
-          <p className="text-lg line-clamp-2 leading-snug">
+          <p className="line-clamp-3 text-base leading-snug sm:text-lg">
             {project.description}
           </p>
 
-          {/* Dates */}
-          <div className="flex items-center gap-2 text-base pt-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2 text-sm sm:text-base">
             <Calendar className="w-4 h-4" />
             <span>
               {startText}
@@ -104,8 +101,7 @@ function ProjectCard({ project }) {
           </div>
           <p className="text-xs opacity-80">Created: {createdText}</p>
 
-          {/* Members + Owner */}
-          <div className="flex items-center justify-between pt-2 border-t border-black/20">
+          <div className="flex flex-col gap-3 border-t border-black/20 pt-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
 
@@ -133,7 +129,7 @@ function ProjectCard({ project }) {
               </div>
             </div>
 
-            <span className="text-sm">by {owner?.name ?? "Unknown"}</span>
+            <span className="text-sm break-words">by {owner?.name ?? "Unknown"}</span>
           </div>
         </div>
       </div>

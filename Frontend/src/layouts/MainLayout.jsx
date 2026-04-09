@@ -20,7 +20,7 @@ function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen overflow-x-hidden bg-gray-100">
       <Navbar />
 
       <main>

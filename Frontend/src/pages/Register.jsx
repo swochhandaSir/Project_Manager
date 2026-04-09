@@ -50,7 +50,7 @@ function Register() {
       }}
     >
       <div
-        className="w-full max-w-md p-8 rounded-sm"
+        className="w-full max-w-md rounded-sm p-5 sm:p-8"
         style={{
           backgroundColor: "#FEFF9C",
           transform: "rotate(1deg)",
@@ -69,7 +69,7 @@ function Register() {
           </div>
 
           <h1
-            className="text-4xl font-bold mb-2"
+            className="mb-2 text-3xl font-bold sm:text-4xl"
             style={{
               fontFamily: "Indie Flower, cursive",
               color: "#333",
@@ -79,7 +79,7 @@ function Register() {
           </h1>
 
           <p
-            className="text-lg"
+            className="text-base sm:text-lg"
             style={{
               fontFamily: "Indie Flower, cursive",
               color: "#666",
@@ -195,7 +195,7 @@ function Register() {
 
         <div className="mt-4 text-center">
           <span
-            className="text-base"
+            className="text-sm sm:text-base"
             style={{
               fontFamily: "Indie Flower, cursive",
               color: "#666",

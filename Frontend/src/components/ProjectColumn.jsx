@@ -18,17 +18,15 @@ function ProjectColumn({ title, status, projects, onDrop }) {
   return (
     <div
       ref={drop}
-      className={`flex-1 min-w-[350px] p-6 transition-all relative ${
+      className={`min-w-0 flex-1 p-4 transition-all relative sm:p-6 md:min-w-[320px] ${
+        status !== "completed" ? "border-b-[3px] border-black/80 md:border-b-0 md:border-r-[3px]" : ""
+      } ${
         isOver ? "bg-blue-100/30" : ""
       }`}
-      style={{
-        borderRight: status !== "completed" ? "3px solid #333" : "none",
-      }}
     >
-      {/* Column Header */}
       <div className="mb-8">
         <h3
-          className="text-3xl font-bold mb-2"
+          className="mb-2 text-2xl font-bold sm:text-3xl"
           style={{
             fontFamily: "Indie Flower, cursive",
             color: "#333",
@@ -43,7 +41,6 @@ function ProjectColumn({ title, status, projects, onDrop }) {
         />
       </div>
 
-      {/* Projects List */}
       <div className="space-y-6">
         {projects.map((project) => (
           <ProjectCard key={project._id} project={project} />
