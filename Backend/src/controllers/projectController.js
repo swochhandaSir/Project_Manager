@@ -1,5 +1,22 @@
 import projectSchema from "../models/projectModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+	cacheGetJson,
+	cacheSetJson,
+	invalidateUserCache,
+	trackUserCacheKey,
+} from "../utils/cache.js";
+
+const PROJECTS_TTL_SECONDS = 60;
+
+async function invalidateProjectAudienceCache(projectDoc) {
+	if (!projectDoc) return;
+	const userIds = new Set([
+		String(projectDoc.owner),
+		...(Array.isArray(projectDoc.members) ? projectDoc.members.map(String) : []),
+	]);
+	await Promise.all([...userIds].map((id) => invalidateUserCache(id)));
+}
 
 export const createProject = asyncHandler(async (req, res) => {
 	if (!req.user) {
@@ -20,6 +37,8 @@ export const createProject = asyncHandler(async (req, res) => {
 		members: Array.isArray(req.body.members) ? req.body.members : [req.user.id],
 	});
 
+	await invalidateProjectAudienceCache(project);
+
 	res.status(201).json(project);
 });
 
@@ -28,12 +47,21 @@ export const getProjects = asyncHandler(async (req, res) => {
 		return res.status(401).json({ message: "Not authorized" });
 	}
 
+	const cacheKey = `projects:${req.user.id}`;
+	const cached = await cacheGetJson(cacheKey);
+	if (cached) {
+		return res.json(cached);
+	}
+
 	const projects = await projectSchema
 		.find({
 			$or: [{ owner: req.user.id }, { members: req.user.id }],
 		})
 		.populate("owner", "name email")
 		.populate("members", "name email avatar");
+
+	await cacheSetJson(cacheKey, projects, PROJECTS_TTL_SECONDS);
+	await trackUserCacheKey(req.user.id, cacheKey);
 
 	res.json(projects);
 });
@@ -88,6 +116,9 @@ export const updateProject = asyncHandler(async (req, res) => {
 		.populate("owner", "name email")
 		.populate("members", "name email avatar");
 
+	await invalidateProjectAudienceCache(existing);
+	await invalidateProjectAudienceCache(project);
+
 	res.json(project);
 });
 
@@ -104,6 +135,8 @@ export const deleteProject = asyncHandler(async (req, res) => {
 	}
 
 	await project.deleteOne();
+
+	await invalidateProjectAudienceCache(project);
 
 	res.json({ message: "Project deleted" });
 });

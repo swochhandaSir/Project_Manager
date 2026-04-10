@@ -1,6 +1,27 @@
 import taskSchema from "../models/taskModel.js";
 import projectSchema from "../models/projectModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+  cacheGetJson,
+  cacheSetJson,
+  invalidateUserCache,
+  trackUserCacheKey,
+} from "../utils/cache.js";
+
+const TASKS_TTL_SECONDS = 60;
+
+async function invalidateProjectUsersCache(projectId) {
+  if (!projectId) return;
+  const project = await projectSchema.findById(projectId).select("owner members").lean();
+  if (!project) return;
+
+  const userIds = new Set([
+    String(project.owner),
+    ...(Array.isArray(project.members) ? project.members.map(String) : []),
+  ]);
+
+  await Promise.all([...userIds].map((id) => invalidateUserCache(id)));
+}
 
 export const createTask = asyncHandler(async (req, res) => {
 
@@ -18,6 +39,8 @@ export const createTask = asyncHandler(async (req, res) => {
     assignedTo: req.body.assignedTo ?? req.user?.id,
   });
 
+  await invalidateProjectUsersCache(req.body.projectId);
+
   res.status(201).json(task);
 });
 
@@ -26,6 +49,12 @@ export const getTasks = asyncHandler(async (req, res) => {
 
   if (!req.user) {
     return res.status(401).json({ message: "Not authorized" });
+  }
+
+  const cacheKey = `tasks:${req.user.id}:${req.params.projectId}`;
+  const cached = await cacheGetJson(cacheKey);
+  if (cached) {
+    return res.json(cached);
   }
 
   const project = await projectSchema.findOne({
@@ -43,6 +72,9 @@ export const getTasks = asyncHandler(async (req, res) => {
     .populate("assignedTo", "name email avatar")
     .populate("projectId", "title");
 
+  await cacheSetJson(cacheKey, tasks, TASKS_TTL_SECONDS);
+  await trackUserCacheKey(req.user.id, cacheKey);
+
   res.json(tasks);
 });
 
@@ -52,10 +84,19 @@ export const getMyTasks = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: "Not authorized" });
   }
 
+  const cacheKey = `tasks:my:${req.user.id}`;
+  const cached = await cacheGetJson(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
+
   const tasks = await taskSchema
     .find({ assignedTo: req.user.id })
     .populate("assignedTo", "name email avatar")
     .populate("projectId", "title");
+
+  await cacheSetJson(cacheKey, tasks, TASKS_TTL_SECONDS);
+  await trackUserCacheKey(req.user.id, cacheKey);
 
   res.json(tasks);
 });
@@ -68,6 +109,10 @@ export const updateTask = asyncHandler(async (req, res) => {
     req.body,
     { new: true }
   );
+
+  if (task?.projectId) {
+    await invalidateProjectUsersCache(task.projectId);
+  }
 
   res.json(task);
 });
@@ -92,6 +137,8 @@ export const deleteTask = asyncHandler(async (req, res) => {
   }
 
   await task.deleteOne();
+
+  await invalidateProjectUsersCache(task.projectId);
 
   res.json({ message: "Task deleted" });
 });
