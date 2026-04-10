@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 const isProd = process.env.NODE_ENV === "production";
 const refreshCookieOptions = {
 	httpOnly: true,
-	sameSite: "lax",
+	sameSite: isProd ? "None" : "Lax",
 	secure: isProd,
 	path: "/",
 };
