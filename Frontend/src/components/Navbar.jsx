@@ -79,7 +79,7 @@ function Navbar() {
 			}}
 		>
 			<div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-				<div className="flex items-center justify-between gap-4 lg:flex-1">
+				<div className="flex items-center justify-between gap-4 lg:flex-1 lg:gap-12	lg:justify-start">
 					<Link
 						to="/dashboard"
 						className="flex items-center gap-3"

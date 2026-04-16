@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
 
     } catch (error) {
       console.error(error);
-      return false;
+      throw error;
     }
   };
 
