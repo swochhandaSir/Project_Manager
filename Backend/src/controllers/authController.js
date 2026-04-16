@@ -17,8 +17,36 @@ const clearRefreshCookies = (res) => {
 	res.clearCookie("RefreshToken", refreshCookieOptions);
 };
 
+const validatePassword = (password) => {
+	if (typeof password !== "string") {
+		return "Password is required";
+	}
+
+	const trimmedPassword = password.trim();
+	const hasUppercase = /[A-Z]/.test(trimmedPassword);
+	const hasLowercase = /[a-z]/.test(trimmedPassword);
+	const hasNumber = /\d/.test(trimmedPassword);
+	const hasSpecialCharacter = /[^A-Za-z0-9]/.test(trimmedPassword);
+
+	if (trimmedPassword.length < 8) {
+		return "Password must be at least 8 characters long";
+	}
+
+	if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecialCharacter) {
+		return "Password must include uppercase, lowercase, number, and special character";
+	}
+
+	return null;
+};
+
 export const registerUser = asyncHandler(async (req, res) => {
 	const { name, email, password } = req.body;
+
+	const passwordError = validatePassword(password);
+	if (passwordError) {
+		res.status(400);
+		throw new Error(passwordError);
+	}
 
 	const userExists = await userSchema.findOne({ email });
 

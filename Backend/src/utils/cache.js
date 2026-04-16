@@ -15,7 +15,15 @@ export async function getCacheClient() {
     redisClient = createClient({ url: redisUrl });
     redisClient.on("error", (err) => {
       redisReady = false;
-      console.error("[redis] Client error:", err.message);
+      console.error("[redis] Client error:", {
+        message: err?.message || "No message",
+        code: err?.code || "No code",
+        name: err?.name || "UnknownError",
+        cause: err?.cause || null,
+      });
+      if (err?.stack) {
+        console.error("[redis] stack:", err.stack);
+      }
     });
     redisClient.on("ready", () => {
       redisReady = true;
