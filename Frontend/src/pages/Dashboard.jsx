@@ -4,11 +4,12 @@ import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { StatCard } from "../components/StatCard";
 import { SkeletonCard } from "../components/SkeletonCard";
-import { FolderKanban, ListChecks, Users } from "lucide-react";
+import { FolderKanban, ListChecks, Users, Plus } from "lucide-react";
 import { Link } from "react-router";
 import { getProjects } from "../api/projectApi";
 import { getMyTasks } from "../api/taskApi";
 import { getUsers } from "../api/userApi";
+import { Button } from "../components/ui/button";
 
 function Dashboard() {
 	const { currentUser, authReady } = useAuth();
@@ -170,6 +171,7 @@ function Dashboard() {
 									subtitle: `${activeProjects} active`,
 									icon: FolderKanban,
 									color: stickyColors[0],
+									link: "/projects",
 								},
 								{
 									title: "My Tasks",
@@ -177,6 +179,7 @@ function Dashboard() {
 									subtitle: `${inProgressTasks} in progress`,
 									icon: ListChecks,
 									color: stickyColors[1],
+									link: "/tasks",
 								},
 								{
 									title: "Team Members",
@@ -186,15 +189,29 @@ function Dashboard() {
 									color: stickyColors[2],
 								},
 							].map((stat, index) => (
-								<StatCard
-									key={stat.title}
-									title={stat.title}
-									value={stat.value}
-									subtitle={stat.subtitle}
-									icon={stat.icon}
-									color={stat.color}
-									rotation={[2, -3, 3, -2][index]}
-								/>
+								stat.link ? (
+									<Link key={stat.title} to={stat.link} className="block">
+										<StatCard
+											title={stat.title}
+											value={stat.value}
+											subtitle={stat.subtitle}
+											icon={stat.icon}
+											color={stat.color}
+											rotation={[2, -3, 3, -2][index]}
+											className="hover:scale-105 transition-transform duration-200 cursor-pointer"
+										/>
+									</Link>
+								) : (
+									<StatCard
+										key={stat.title}
+										title={stat.title}
+										value={stat.value}
+										subtitle={stat.subtitle}
+										icon={stat.icon}
+										color={stat.color}
+										rotation={[2, -3, 3, -2][index]}
+									/>
+								)
 							))}
 						</div>
 
@@ -251,12 +268,23 @@ function Dashboard() {
             `,
 								}}
 							>
-								<h3
-									className="mb-6 text-xl font-bold sm:text-2xl"
-									style={{ fontFamily: "Indie Flower, cursive", color: "#333" }}
-								>
-									Recent Projects
-								</h3>
+								<div className="mb-6 flex items-center justify-between">
+									<h3
+										className="text-xl font-bold sm:text-2xl"
+										style={{ fontFamily: "Indie Flower, cursive", color: "#333" }}
+									>
+										Recent Projects
+									</h3>
+									<Link to="/projects/new">
+										<Button
+											size="sm"
+											className="bg-white/20 hover:bg-white/30 text-black border border-white/30 hover:border-white/50 transition-colors"
+										>
+											<Plus className="w-4 h-4 mr-2" />
+											Create Project
+										</Button>
+									</Link>
+								</div>
 
 								<div className="space-y-4">
 									{myProjects.slice(0, 3).map((project) => (

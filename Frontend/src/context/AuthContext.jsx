@@ -39,7 +39,8 @@ export function AuthProvider({ children }) {
     try {
       await registerRequest(name, email, password);
 
-      return true;
+      // Automatically log in the user after successful registration
+      return await login(email, password);
 
     } catch (error) {
       console.error(error);

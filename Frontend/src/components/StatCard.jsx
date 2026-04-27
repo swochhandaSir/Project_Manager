@@ -1,9 +1,10 @@
 import React from "react";
+import { cn } from "./ui/utils";
 
-export function StatCard({ title, value, subtitle, icon: Icon, color, rotation }) {
+export function StatCard({ title, value, subtitle, icon: Icon, color, rotation, className }) {
   return (
     <div
-      className="p-6 rounded-sm min-h-[140px]"
+      className={cn("p-6 rounded-sm min-h-[140px]", className)}
       style={{
         backgroundColor: color.bg,
         color: color.text,
