@@ -6,11 +6,22 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Calendar as DatePicker } from "../components/ui/calendar";
-import { CalendarDays } from "lucide-react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../components/ui/select";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "../components/ui/popover";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 
 function CreateProject() {
 	const navigate = useNavigate();
@@ -41,8 +52,12 @@ function CreateProject() {
 			title: formData.title,
 			description: formData.description,
 			status: formData.status,
-			startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
-			endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
+			startDate: formData.startDate
+				? new Date(formData.startDate).toISOString()
+				: undefined,
+			endDate: formData.endDate
+				? new Date(formData.endDate).toISOString()
+				: undefined,
 			owner: currentUser?._id,
 			members: currentUser?._id ? [currentUser._id] : [],
 		}),
@@ -56,7 +71,11 @@ function CreateProject() {
 			return;
 		}
 
-		if (formData.startDate && formData.endDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+		if (
+			formData.startDate &&
+			formData.endDate &&
+			new Date(formData.endDate) < new Date(formData.startDate)
+		) {
 			toast.error("End date cannot be before start date");
 			return;
 		}
@@ -83,7 +102,10 @@ function CreateProject() {
 					onSubmit={handleSubmit}
 					className="w-full space-y-4 rounded-sm bg-white p-5 shadow-lg sm:p-8"
 				>
-					<h2 className="mb-6 text-2xl sm:text-3xl" style={{ fontFamily: "Indie Flower, cursive" }}>
+					<h2
+						className="mb-6 text-2xl sm:text-3xl"
+						style={{ fontFamily: "Indie Flower, cursive" }}
+					>
 						Create Project
 					</h2>
 
@@ -113,7 +135,12 @@ function CreateProject() {
 
 					<div className="space-y-2">
 						<Label>Status</Label>
-						<Select value={formData.status} onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}>
+						<Select
+							value={formData.status}
+							onValueChange={(value) =>
+								setFormData((prev) => ({ ...prev, status: value }))
+							}
+						>
 							<SelectTrigger>
 								<SelectValue placeholder="Select status" />
 							</SelectTrigger>
@@ -126,51 +153,77 @@ function CreateProject() {
 					</div>
 
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						{/* Start Date */}
 						<div className="space-y-2">
 							<Label>Start Date</Label>
 							<Popover>
 								<PopoverTrigger asChild>
-									<Button type="button" variant="outline" className="w-full justify-start font-normal">
-										<CalendarDays className="mr-2 h-4 w-4" />
-										{formatDate(formData.startDate)}
+									<Button
+										type="button"
+										variant="outline"
+										className="w-full justify-start font-normal"
+									>
+										{formData.startDate
+											? format(formData.startDate, "PPP")
+											: "Pick a date"}
 									</Button>
 								</PopoverTrigger>
+
 								<PopoverContent className="w-auto p-0">
-									<DatePicker
+									<DayPicker
 										mode="single"
-										selected={formData.startDate ? new Date(formData.startDate) : undefined}
+										selected={formData.startDate ?? undefined}
 										onSelect={(date) =>
 											setFormData((prev) => ({
 												...prev,
-												startDate: date || null,
+												startDate: date ?? null,
 											}))
 										}
-										initialFocus
+										className="p-4"
+										classNames={{
+											caption: "flex justify-end items-center",
+											caption_label: "text-right font-medium",
+											nav: "flex items-center gap-1",
+											day_selected: "bg-blue-600 text-white rounded-full",
+											day: "hover:bg-gray-200 rounded-full"
+										}}
 									/>
 								</PopoverContent>
 							</Popover>
 						</div>
 
+						{/* End Date */}
 						<div className="space-y-2">
 							<Label>End Date</Label>
 							<Popover>
 								<PopoverTrigger asChild>
-									<Button type="button" variant="outline" className="w-full justify-start font-normal">
-										<CalendarDays className="mr-2 h-4 w-4" />
-										{formatDate(formData.endDate)}
+									<Button
+										type="button"
+										variant="outline"
+										className="w-full justify-start font-normal"
+									>
+										{formData.endDate ? format(formData.endDate, "PPP") : "Pick a date"}
 									</Button>
 								</PopoverTrigger>
+
 								<PopoverContent className="w-auto p-0">
-									<DatePicker
+									<DayPicker
 										mode="single"
-										selected={formData.endDate ? new Date(formData.endDate) : undefined}
+										selected={formData.endDate ?? undefined}
 										onSelect={(date) =>
 											setFormData((prev) => ({
 												...prev,
-												endDate: date || null,
+												endDate: date ?? null,
 											}))
 										}
-										initialFocus
+										className="p-4"
+										classNames={{
+											caption: "flex justify-end items-center",
+											caption_label: "text-right font-medium",
+											nav: "flex items-center gap-1",
+											day_selected: "bg-blue-600 text-white rounded-full",
+											day: "hover:bg-gray-200 rounded-full"
+										}}
 									/>
 								</PopoverContent>
 							</Popover>

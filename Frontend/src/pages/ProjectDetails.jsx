@@ -10,20 +10,59 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Textarea } from "../components/ui/textarea";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "../components/ui/sheet";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../components/ui/select";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "../components/ui/popover";
 import { Calendar as DatePicker } from "../components/ui/calendar";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "../components/ui/dialog";
 import { CalendarDays, MessageSquare, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { Skeleton } from "../components/ui/skeleton";
-import { deleteProject, getProjectById, updateProject } from "../api/projectApi";
-import { createTask, deleteTask, getProjectTasks, updateTask } from "../api/taskApi";
+import {
+	deleteProject,
+	getProjectById,
+	updateProject,
+} from "../api/projectApi";
+import {
+	createTask,
+	deleteTask,
+	getProjectTasks,
+	updateTask,
+} from "../api/taskApi";
 import { getUsers } from "../api/userApi";
-import { createComment, deleteComment, getProjectComments } from "../api/commentApi";
+import {
+	createComment,
+	deleteComment,
+	getProjectComments,
+} from "../api/commentApi";
 import { SkeletonCard } from "../components/SkeletonCard";
+import { format } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 
 function ProjectDetails() {
 	const { id } = useParams();
@@ -64,7 +103,9 @@ function ProjectDetails() {
 			title: taskForm.title,
 			description: taskForm.description,
 			priority: taskForm.priority,
-			dueDate: taskForm.dueDate ? new Date(taskForm.dueDate).toISOString() : undefined,
+			dueDate: taskForm.dueDate
+				? new Date(taskForm.dueDate).toISOString()
+				: undefined,
 			projectId: id,
 			assignedTo: taskForm.assignedTo ?? currentUser?._id,
 			status: "todo",
@@ -84,7 +125,9 @@ function ProjectDetails() {
 				setProject(projectData);
 				setTasks(projectTasks);
 				setProjectComments(pComments);
-				setSelectedMemberIds((projectData?.members ?? []).map((m) => m?._id).filter(Boolean));
+				setSelectedMemberIds(
+					(projectData?.members ?? []).map((m) => m?._id).filter(Boolean),
+				);
 				setTaskForm((prev) => ({
 					...prev,
 					assignedTo: currentUser?._id ?? null,
@@ -215,7 +258,10 @@ function ProjectDetails() {
 										{title}
 									</h3>
 
-									<div className="h-1 rounded-full bg-black/80" style={{ width: "80%" }} />
+									<div
+										className="h-1 rounded-full bg-black/80"
+										style={{ width: "80%" }}
+									/>
 								</div>
 
 								<div className="space-y-6">
@@ -253,9 +299,14 @@ function ProjectDetails() {
 		);
 	}
 
-	const isOwner = String(project.owner?._id ?? project.owner) === String(currentUser?._id);
+	const isOwner =
+		String(project.owner?._id ?? project.owner) === String(currentUser?._id);
 	const currentMembers = Array.isArray(project.members) ? project.members : [];
-	const assigneeOptions = currentMembers.length ? currentMembers : (currentUser ? [currentUser] : []);
+	const assigneeOptions = currentMembers.length
+		? currentMembers
+		: currentUser
+			? [currentUser]
+			: [];
 
 	const toggleMember = (userId) => {
 		setSelectedMemberIds((prev) => {
@@ -329,7 +380,11 @@ function ProjectDetails() {
 			<div className="mx-auto max-w-7xl">
 				<div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
 					<div className="min-w-0 flex-1">
-						<Button variant="ghost" className="mb-3 w-fit" onClick={() => navigate("/projects")}>
+						<Button
+							variant="ghost"
+							className="mb-3 w-fit"
+							onClick={() => navigate("/projects")}
+						>
 							Back to Projects
 						</Button>
 						<h1
@@ -351,29 +406,43 @@ function ProjectDetails() {
 							{project.description || "No description"}
 						</p>
 						<p className="mt-2 text-sm text-gray-600">
-							Created: {project.createdAt ? new Date(project.createdAt).toLocaleString() : "N/A"}
+							Created:{" "}
+							{project.createdAt
+								? new Date(project.createdAt).toLocaleString()
+								: "N/A"}
 						</p>
 
 						<div className="mt-4 flex items-center gap-2 text-sm text-gray-700">
 							<Users className="h-4 w-4" />
-							<span>{currentMembers.length} member{currentMembers.length === 1 ? "" : "s"}</span>
+							<span>
+								{currentMembers.length} member{currentMembers.length === 1 ? "" : "s"}
+							</span>
 						</div>
 					</div>
 
 					<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
 						<Sheet>
 							<SheetTrigger asChild>
-								<Button variant="outline" className="w-full gap-2 sm:w-auto">
+								<Button
+									variant="outline"
+									className="w-full gap-2 sm:w-auto"
+								>
 									<MessageSquare className="w-4 h-4" />
 									Comments
 								</Button>
 							</SheetTrigger>
-							<SheetContent side="right" className="sm:max-w-md">
+							<SheetContent
+								side="right"
+								className="sm:max-w-md"
+							>
 								<SheetHeader>
 									<SheetTitle>Project Comments</SheetTitle>
 								</SheetHeader>
 								<div className="flex flex-col gap-3 px-4 pb-4">
-									<form onSubmit={submitProjectComment} className="flex flex-col gap-2 sm:flex-row">
+									<form
+										onSubmit={submitProjectComment}
+										className="flex flex-col gap-2 sm:flex-row"
+									>
 										<Input
 											value={projectCommentText}
 											onChange={(e) => setProjectCommentText(e.target.value)}
@@ -389,21 +458,29 @@ function ProjectDetails() {
 													className="rounded-sm border border-black/10 p-3 text-sm"
 													style={{
 														backgroundColor: "#FEFF9C",
-														boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
+														boxShadow:
+															"0 1px 3px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
 													}}
 												>
 													<div className="mb-1 flex items-start justify-between gap-2">
 														<div className="flex min-w-0 items-center gap-2">
 															<Avatar className="h-7 w-7 border border-white">
-																<AvatarImage src={c.userId?.avatar} alt={c.userId?.name} />
+																<AvatarImage
+																	src={c.userId?.avatar}
+																	alt={c.userId?.name}
+																/>
 																<AvatarFallback className="text-xs">
 																	{(c.userId?.name ?? "?").charAt(0)}
 																</AvatarFallback>
 															</Avatar>
 															<div className="min-w-0 leading-tight">
-																<p className="truncate font-medium">{c.userId?.name ?? "User"}</p>
+																<p className="truncate font-medium">
+																	{c.userId?.name ?? "User"}
+																</p>
 																<p className="text-[11px] text-gray-600">
-																	{c.createdAt ? new Date(c.createdAt).toLocaleString() : "just now"}
+																	{c.createdAt
+																		? new Date(c.createdAt).toLocaleString()
+																		: "just now"}
 																</p>
 															</div>
 														</div>
@@ -418,7 +495,10 @@ function ProjectDetails() {
 															</Button>
 														)}
 													</div>
-													<p className="text-[15px]" style={{ fontFamily: "Indie Flower, cursive" }}>
+													<p
+														className="text-[15px]"
+														style={{ fontFamily: "Indie Flower, cursive" }}
+													>
 														{c.message}
 													</p>
 												</div>
@@ -429,14 +509,23 @@ function ProjectDetails() {
 							</SheetContent>
 						</Sheet>
 
-						<Dialog open={membersOpen} onOpenChange={setMembersOpen}>
+						<Dialog
+							open={membersOpen}
+							onOpenChange={setMembersOpen}
+						>
 							<DialogTrigger asChild>
 								<Button
 									variant="outline"
 									className="w-full gap-2 sm:w-auto"
 									disabled={!isOwner}
-									title={isOwner ? "Manage members" : "Only the owner can manage members"}
-									onClick={() => setSelectedMemberIds(currentMembers.map((m) => m?._id).filter(Boolean))}
+									title={
+										isOwner ? "Manage members" : "Only the owner can manage members"
+									}
+									onClick={() =>
+										setSelectedMemberIds(
+											currentMembers.map((m) => m?._id).filter(Boolean),
+										)
+									}
 								>
 									<Users className="w-4 h-4" />
 									Members
@@ -450,10 +539,18 @@ function ProjectDetails() {
 								<ScrollArea className="h-72 pr-2">
 									<div className="space-y-3">
 										{allUsers.map((u) => {
-											const checked = selectedMemberIds.map(String).includes(String(u._id));
+											const checked = selectedMemberIds
+												.map(String)
+												.includes(String(u._id));
 											return (
-												<div key={u._id} className="flex items-center gap-3">
-													<Checkbox checked={checked} onCheckedChange={() => toggleMember(u._id)} />
+												<div
+													key={u._id}
+													className="flex items-center gap-3"
+												>
+													<Checkbox
+														checked={checked}
+														onCheckedChange={() => toggleMember(u._id)}
+													/>
 													<div className="flex flex-col">
 														<span className="text-sm font-medium">{u.name}</span>
 														<span className="text-xs text-gray-500">{u.email}</span>
@@ -465,17 +562,28 @@ function ProjectDetails() {
 								</ScrollArea>
 
 								<DialogFooter>
-									<Button type="button" variant="outline" onClick={() => setMembersOpen(false)}>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => setMembersOpen(false)}
+									>
 										Cancel
 									</Button>
-									<Button type="button" onClick={saveMembers} disabled={savingMembers}>
+									<Button
+										type="button"
+										onClick={saveMembers}
+										disabled={savingMembers}
+									>
 										{savingMembers ? "Saving..." : "Save"}
 									</Button>
 								</DialogFooter>
 							</DialogContent>
 						</Dialog>
 
-						<Dialog open={open} onOpenChange={setOpen}>
+						<Dialog
+							open={open}
+							onOpenChange={setOpen}
+						>
 							<DialogTrigger asChild>
 								<Button className="w-full gap-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 sm:w-auto">
 									<Plus className="w-4 h-4" />
@@ -487,13 +595,18 @@ function ProjectDetails() {
 									<DialogTitle>Create Task</DialogTitle>
 								</DialogHeader>
 
-								<form onSubmit={handleCreateTask} className="space-y-4">
+								<form
+									onSubmit={handleCreateTask}
+									className="space-y-4"
+								>
 									<div className="space-y-2">
 										<Label htmlFor="taskTitle">Title</Label>
 										<Input
 											id="taskTitle"
 											value={taskForm.title}
-											onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))}
+											onChange={(e) =>
+												setTaskForm((p) => ({ ...p, title: e.target.value }))
+											}
 											placeholder="Task title"
 											required
 										/>
@@ -504,7 +617,9 @@ function ProjectDetails() {
 										<Textarea
 											id="taskDesc"
 											value={taskForm.description}
-											onChange={(e) => setTaskForm((p) => ({ ...p, description: e.target.value }))}
+											onChange={(e) =>
+												setTaskForm((p) => ({ ...p, description: e.target.value }))
+											}
 											placeholder="What needs to be done?"
 										/>
 									</div>
@@ -513,7 +628,9 @@ function ProjectDetails() {
 										<Label>Priority</Label>
 										<Select
 											value={taskForm.priority}
-											onValueChange={(value) => setTaskForm((p) => ({ ...p, priority: value }))}
+											onValueChange={(value) =>
+												setTaskForm((p) => ({ ...p, priority: value }))
+											}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select priority" />
@@ -530,14 +647,19 @@ function ProjectDetails() {
 										<Label>Assign to</Label>
 										<Select
 											value={taskForm.assignedTo ?? ""}
-											onValueChange={(value) => setTaskForm((p) => ({ ...p, assignedTo: value }))}
+											onValueChange={(value) =>
+												setTaskForm((p) => ({ ...p, assignedTo: value }))
+											}
 										>
 											<SelectTrigger>
 												<SelectValue placeholder="Select member" />
 											</SelectTrigger>
 											<SelectContent>
 												{assigneeOptions.map((m) => (
-													<SelectItem key={m._id} value={m._id}>
+													<SelectItem
+														key={m._id}
+														value={m._id}
+													>
 														{m.name} ({m.email})
 													</SelectItem>
 												))}
@@ -549,24 +671,45 @@ function ProjectDetails() {
 										<Label>Due Date</Label>
 										<Popover>
 											<PopoverTrigger asChild>
-												<Button type="button" variant="outline" className="w-full justify-start font-normal">
-													<CalendarDays className="mr-2 h-4 w-4" />
-													{formatDate(taskForm.dueDate)}
+												<Button
+													type="button"
+													variant="outline"
+													className="w-full justify-start font-normal"
+												>
+													{taskForm.dueDate
+														? format(taskForm.dueDate, "PPP")
+														: "Pick a date"}
 												</Button>
 											</PopoverTrigger>
-											<PopoverContent className="w-auto p-0">
-												<DatePicker
+
+											<PopoverContent className="w-auto p-0 min-h-95">
+												<DayPicker
 													mode="single"
-													selected={taskForm.dueDate ? new Date(taskForm.dueDate) : undefined}
-													onSelect={(date) => setTaskForm((p) => ({ ...p, dueDate: date || null }))}
+													selected={
+														taskForm.dueDate ? new Date(taskForm.dueDate) : undefined
+													}
+													onSelect={(date) =>
+														setTaskForm((p) => ({ ...p, dueDate: date || null }))
+													}
 													initialFocus
+													className="p-4"
+													classNames={{
+														caption: "flex justify-end items-center",
+														caption_label: "text-right font-medium",
+														nav: "flex items-center gap-1",
+													}}
 												/>
 											</PopoverContent>
 										</Popover>
+
 									</div>
 
 									<DialogFooter>
-										<Button type="submit" disabled={creating} className="bg-blue-500 text-white hover:bg-blue-600">
+										<Button
+											type="submit"
+											disabled={creating}
+											className="bg-blue-500 text-white hover:bg-blue-600"
+										>
 											{creating ? "Creating..." : "Create Task"}
 										</Button>
 									</DialogFooter>
@@ -608,7 +751,11 @@ function ProjectDetails() {
 				</DndProvider>
 
 				<div className="mt-8 flex justify-stretch sm:justify-end">
-					<Button variant="destructive" className="w-full gap-2 sm:w-auto" onClick={handleDeleteProject}>
+					<Button
+						variant="destructive"
+						className="w-full gap-2 sm:w-auto"
+						onClick={handleDeleteProject}
+					>
 						<Trash2 className="w-4 h-4" />
 						Delete Project
 					</Button>
