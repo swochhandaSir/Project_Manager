@@ -59,10 +59,8 @@ function Landing() {
 			<nav className="border-b-4 border-black/80 bg-white/30 px-4 py-4 backdrop-blur-sm sm:px-6">
 				<div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex items-center gap-3">
-						<div className="rounded-lg bg-blue-500 p-2 shadow-md rotate-3">
-							<FolderKanban className="h-6 w-6 text-white" />
-						</div>
-						<span
+							<img src="/logo.png" alt="Logo" className="w-12 h-12" />
+					<span
 							className="text-2xl font-bold sm:text-3xl"
 							style={{
 								fontFamily: "Indie Flower, cursive",

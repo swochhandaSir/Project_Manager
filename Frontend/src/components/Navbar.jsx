@@ -84,9 +84,7 @@ function Navbar() {
 						to="/dashboard"
 						className="flex items-center gap-3"
 					>
-						<div className="bg-blue-500 p-2 rounded-lg shadow-md transform rotate-3">
-							<FolderKanban className="w-6 h-6 text-white" />
-						</div>
+							<img src="/logo.png" alt="Logo" className="w-12 h-12 text-white" />
 
 						<span
 							className="text-2xl font-bold sm:text-3xl"
